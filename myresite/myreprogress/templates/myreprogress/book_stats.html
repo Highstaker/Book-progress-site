@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book_name }} details{% endblock %}
+
+{% block body %}
+	Book "{{ book_name }}" stats<br>
+	<ul>
+		sketched colored edited proofread
+		{% for page in book_pages %}
+		<li>Page {{ page.page_number }} -- {{page.sketched|yesno:"V,X"}} {{page.colored|yesno:"V,X"}} {{page.edited|yesno:"V,X"}} {{page.proofread|yesno:"V,X"}}</li>
+		{% endfor %}
+	</ul>
+{% endblock %}
