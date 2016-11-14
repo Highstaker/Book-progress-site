@@ -2,7 +2,20 @@
 
 {% block title %}{{ book_name }} details{% endblock %}
 
-
+{% block scripts %}
+	{% if user.is_staff %}
+		<script type="text/javascript">
+			//script for checkboxes
+			$(document).ready(function(){
+				console.log("Script started");
+				$(".editable_checkbox").click(function(event){
+					console.log("Clicked!");
+					$(this).css({"background-color": "cyan"});
+				});
+			});
+		</script>
+	{% endif %}
+{% endblock %}
 
 {% block body %}
 Book "{{ book_name }}" stats<br>
@@ -18,10 +31,10 @@ Book "{{ book_name }}" stats<br>
 	<tr>
 		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread%}
 		<td>Page {{ page.page_number }}</td>
-		<td style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
-		<td style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
-		<td style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
-		<td style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
+		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
+		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
+		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
+		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
 		{% endwith %}
 	</tr>
 	{% endfor %}
