@@ -21,3 +21,4 @@ def book_stats(request, book_id):
     book_name = get_object_or_404(Book, pk=book_id)
     book_pages = BookPage.objects.filter(book=book_id)
     return render(request, "myreprogress/book_stats.html", {"book_name": book_name, "book_pages": book_pages})
+
