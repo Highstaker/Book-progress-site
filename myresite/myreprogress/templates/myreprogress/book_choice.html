@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}{{ book_name }}Choose a book{% endblock %}
+
+{% block body %}
+LOL
+<ul>
+	{% for book in books %}
+	<li><a href="{{book.pk}}">{{book.book_name}}</a></li>
+	{% endfor %}
+</ul>
+{% endblock %}

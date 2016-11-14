@@ -1,4 +1,4 @@
-from django.shortcuts import render, get_object_or_404, render_to_response
+from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.template import RequestContext
 from django.http import HttpResponse
 from .models import Book, BookPage
@@ -9,11 +9,12 @@ from .models import Book, BookPage
 #     return response
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the myreprogress index.")
+    return redirect("book/")
 
 
 def book_choice(request):
-    return HttpResponse("Pick a book")
+    books = Book.objects.all()
+    return render(request, "myreprogress/book_choice.html", {"books": books})
 
 
 def book_stats(request, book_id):

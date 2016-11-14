@@ -2,12 +2,28 @@
 
 {% block title %}{{ book_name }} details{% endblock %}
 
+
+
 {% block body %}
-	Book "{{ book_name }}" stats<br>
-	<ul>
-		sketched colored edited proofread
-		{% for page in book_pages %}
-		<li>Page {{ page.page_number }} -- {{page.sketched|yesno:"V,X"}} {{page.colored|yesno:"V,X"}} {{page.edited|yesno:"V,X"}} {{page.proofread|yesno:"V,X"}}</li>
-		{% endfor %}
-	</ul>
+Book "{{ book_name }}" stats<br>
+<table>
+	<tr>
+		<th>Page number</th>
+		<th>sketched </th>
+		<th>colored</th>
+		<th>edited</th>
+		<th>proofread</th>
+	</tr>
+	{% for page in book_pages %}
+	<tr>
+		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread%}
+		<td>Page {{ page.page_number }}</td>
+		<td style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
+		<td style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
+		<td style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
+		<td style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
+		{% endwith %}
+	</tr>
+	{% endfor %}
+</table>
 {% endblock %}
