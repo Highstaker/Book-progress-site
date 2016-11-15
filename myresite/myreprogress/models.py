@@ -3,6 +3,7 @@ from django.db import models
 
 class BookPage(models.Model):
 	page_number = models.IntegerField(default=0)
+	page_name = models.TextField(max_length=200, blank=True)
 	# link to book object this page belongs to.
 	book = models.ForeignKey('Book', on_delete=models.CASCADE)
 

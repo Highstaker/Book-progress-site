@@ -2,6 +2,10 @@
 
 {% block title %}{{ book_name }} details{% endblock %}
 
+{% block scripts_linked %}
+
+{% endblock %}
+
 {% block scripts %}
 	{% if user.is_staff %}
 		<script type="text/javascript">
@@ -10,7 +14,52 @@
 				console.log("Script started");
 				$(".editable_checkbox").click(function(event){
 					console.log("Clicked!");
-					$(this).css({"background-color": "cyan"});
+
+					var id = $(this).attr('id');
+					var parse = id.split("-");
+					var page_number = parse[0];
+					var property = parse[1];
+					console.log(property);//debug
+					console.log("tosend" + JSON.stringify({"page_number": page_number, "property": property}));//debug
+
+					var toggle_checkbox = function(elem){
+						//toggles what the checkbox looks like
+						var COLOR_TRUE = "green";
+						var COLOR_FALSE = "red";
+						var SYMBOL_TRUE = "V";
+						var SYMBOL_FALSE = "X";
+
+						var text = elem.text().trim();
+						console.log(text);
+
+						if(text == "V")
+						{
+							console.log("Turning off");
+							elem.css({"background-color": COLOR_FALSE});
+							elem.text(SYMBOL_FALSE);
+						}
+						else if(text == "X")
+						{
+							console.log("Turning on");
+							elem.css({"background-color": COLOR_TRUE});
+							elem.text(SYMBOL_TRUE);
+						}
+					};
+
+						$.ajax({
+							url: "/api1/book/" + {{book_id}} + "/page/" + page_number + "/set_page_property",
+							type: "POST",
+							dataType: "Json",
+							context: $(this), //Specifies the "this" value for all AJAX related callback functions; needed, cuz callbacks don't get "this" on their own.
+							data: JSON.stringify({"page_number": page_number, "property": property}),
+							success: function(data, status){
+								console.log("Success!");
+								toggle_checkbox($(this));
+							},
+							error: function(xhr,status,error){
+								;
+							}
+						});
 				});
 			});
 		</script>
@@ -31,10 +80,10 @@ Book "{{ book_name }}" stats<br>
 	<tr>
 		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread%}
 		<td>Page {{ page.page_number }}</td>
-		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
-		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
-		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
-		<td class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
+		<td id="{{page.page_number}}-sketched" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
+		<td id="{{page.page_number}}-colored" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
+		<td id="{{page.page_number}}-edited" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
+		<td id="{{page.page_number}}-proofread" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
 		{% endwith %}
 	</tr>
 	{% endfor %}
