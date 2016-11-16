@@ -2,7 +2,7 @@ import json
 
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
-from django.views.decorators.csrf import csrf_protect, csrf_exempt
+from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.http import JsonResponse, Http404
 from ..models import Book, BookPage
@@ -16,7 +16,7 @@ def apiBookPages(request, book_id):
 	return JsonResponse(construct_pages(book_name, book_pages))
 
 
-@csrf_exempt  # TODO: Find a way to remove this
+@ensure_csrf_cookie
 @require_http_methods(["POST"])
 @user_passes_test(lambda user: user.is_staff)
 def apiTogglePageProperty(request, book_id, page_id):
