@@ -4,9 +4,14 @@ from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
-from django.http import JsonResponse, Http404
-from ..models import Book, BookPage
+from django.http import JsonResponse, Http404, HttpResponseNotFound, HttpResponseServerError
+from ..models import Book, BookPage, PageInsertionError
 from .data_constructor import construct_pages
+
+SUCCESS_RESPONSE = JsonResponse({"status": "OK"})
+
+def getPostData(request):
+	return json.loads(request.body.decode())
 
 def apiBookPages(request, book_id):
 	book = Book.objects.get(pk=book_id)
@@ -25,7 +30,7 @@ def apiTogglePageProperty(request, book_id, page_id):
 	except :
 		raise Http404("Page does not exist!")
 
-	data = json.loads(request.body.decode())
+	data = getPostData(request)
 	prperty = data["property"]
 
 	try:
@@ -35,8 +40,40 @@ def apiTogglePageProperty(request, book_id, page_id):
 
 	page.save()  # saving is needed!
 
-	return JsonResponse({"status": "OK"})
+	return SUCCESS_RESPONSE
 
+@csrf_exempt # todo: set CSRF protection after testing
+# @ensure_csrf_cookie
+@require_http_methods(["POST"])
+# @user_passes_test(lambda user: user.is_staff) # todo: uncomment after testing!
+def apiInsertPages(request, book_id):
+	data = getPostData(request)
+	# a position where the pages will be inserted, basically the page BEFORE which the new pages are put.
+	insert_at = int(data["insert_at"])# todo: handle exceptions for unfound attributes in getPostData!
+	# amount of pages to insert
+	pages_amount = int(data["pages_amount"])
 
-# @user_passes_test()
-# def apiAddPage(request):
+	try:
+		BookPage.objects.insertPages(book_id, insert_at, pages_amount)
+	except PageInsertionError as e:
+		return HttpResponseNotFound(str(e))
+
+	return SUCCESS_RESPONSE
+
+@csrf_exempt # todo: set CSRF protection after testing
+# @ensure_csrf_cookie
+@require_http_methods(["POST"])
+# @user_passes_test(lambda user: user.is_staff) # todo: uncomment after testing!
+def apiValidatePages(request, book_id):
+	# data = getPostData(request)
+	# a position where the pages will be inserted, basically the page BEFORE which the new pages are put.
+	# insert_at = int(data["insert_at"])# todo: handle exceptions for unfound attributes in getPostData!
+	# amount of pages to insert
+	# pages_amount = int(data["pages_amount"])
+
+	try:
+		BookPage.objects.validatePageNumbers(book_id)
+	except Exception as e:
+		return HttpResponseServerError(str(e))
+
+	return SUCCESS_RESPONSE

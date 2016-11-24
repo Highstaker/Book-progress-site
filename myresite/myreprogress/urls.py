@@ -11,7 +11,13 @@ urlpatterns = [
     url(r'^book/(?P<book_id>[0-9]+)/$', views.book_stats, name='Book stats'),
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, {'next_page': "/"}, name='logout'),
+
     url(r'^api1/book/(?P<book_id>[0-9]+)/$', api_views.apiBookPages, name='API. Book Pages'),
-    url(r'^api1/book/(?P<book_id>[0-9]+)/page/(?P<page_id>[0-9]+)/set_page_property$',api_views.apiTogglePageProperty,
+    url(r'^api1/book/(?P<book_id>[0-9]+)/page/(?P<page_id>[0-9]+)/set_page_property$', api_views.apiTogglePageProperty,
         name='API. Set page property'),
+    url(r'^api1/book/(?P<book_id>[0-9]+)/add_pages$', api_views.apiInsertPages,
+        name='API. Add pages to book'),
+    url(r'^api1/book/(?P<book_id>[0-9]+)/validate_pages$', api_views.apiValidatePages,
+        name='API. Validate page numbers')
+
 ]
