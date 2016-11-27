@@ -117,6 +117,7 @@ class BookPage(models.Model):
 
 class Book(models.Model):
 	book_name = models.CharField(max_length=300, unique=True)
+	book_slug = models.SlugField(max_length=300, unique=True)
 
 	def __str__(self):
 		return "{}".format(self.book_name)

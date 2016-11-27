@@ -18,6 +18,8 @@ class BookPageAdmin(admin.ModelAdmin):
 
 
 class BookAdmin(admin.ModelAdmin):
+	prepopulated_fields = {'book_slug': ('book_name',)}
+	list_display = ('book_name', 'book_slug',)
 	pass
 
 admin.site.register(BookPage, BookPageAdmin)
