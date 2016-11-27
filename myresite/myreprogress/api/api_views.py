@@ -8,7 +8,8 @@ from django.http import JsonResponse, Http404, HttpResponseNotFound, HttpRespons
 from ..models import Book, BookPage, PageInsertionError
 from .data_constructor import construct_pages
 
-SUCCESS_RESPONSE = JsonResponse({"status": "OK"})
+SUCCESS_JSON_DICT = {"status": "OK"}
+SUCCESS_RESPONSE = JsonResponse(SUCCESS_JSON_DICT)
 
 def getPostData(request):
 	return json.loads(request.body.decode())
@@ -35,12 +36,16 @@ def apiTogglePageProperty(request, book_id, page_id):
 
 	try:
 		setattr(page, prperty, not getattr(page, prperty))  # toggling
+		new_prperty = getattr(page, prperty)
 	except AttributeError:
 		raise Http404("Property does not exist!")
 
 	page.save()  # saving is needed!
 
-	return SUCCESS_RESPONSE
+	response = {'value': int(new_prperty), 'property': prperty}
+	response.update(SUCCESS_JSON_DICT)
+
+	return JsonResponse(response)
 
 @csrf_exempt # todo: set CSRF protection after testing
 # @ensure_csrf_cookie

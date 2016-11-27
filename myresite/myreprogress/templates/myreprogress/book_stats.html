@@ -7,13 +7,22 @@
 {% endblock %}
 
 {% block scripts %}
+{% with color_true="green" symbol_true="V" color_false="red" symbol_false="X" %}
+
 	{% if user.is_staff %}
 		<script type="text/javascript">
 			//script for checkboxes
+			var COLOR_TRANS = "orange";
+			var SYMBOL_TRANS = "O";
+			var COLOR_TRUE = "{{color_true}}";
+			var SYMBOL_TRUE = "{{symbol_true}}";
+			var COLOR_FALSE = "{{color_false}}";
+			var SYMBOL_FALSE = "{{symbol_false}}";
+
 			$(document).ready(function(){
 				console.log("Script started");
 				$(".editable_checkbox").click(function(event){
-					console.log("Clicked!");
+					console.log("Clicked!");//debug
 
 					var id = $(this).attr('id');
 					var parse = id.split("-");
@@ -22,27 +31,28 @@
 					console.log(property);//debug
 					console.log("tosend" + JSON.stringify({"page_number": page_number, "property": property}));//debug
 
-					var toggle_checkbox = function(elem){
+					var set_checkbox = function(elem, val){
 						//toggles what the checkbox looks like
-						var COLOR_TRUE = "green";
-						var COLOR_FALSE = "red";
-						var SYMBOL_TRUE = "V";
-						var SYMBOL_FALSE = "X";
-
 						var text = elem.text().trim();
 						console.log(text);
 
-						if(text == "V")
+						if(val == 0)
 						{
 							console.log("Turning off");
 							elem.css({"background-color": COLOR_FALSE});
 							elem.text(SYMBOL_FALSE);
 						}
-						else if(text == "X")
+						else if(val == 1)
 						{
 							console.log("Turning on");
 							elem.css({"background-color": COLOR_TRUE});
 							elem.text(SYMBOL_TRUE);
+						}
+						else if(val == -1)
+						{
+							console.log("Transition");
+							elem.css({"background-color": COLOR_TRANS});
+							elem.text(SYMBOL_TRANS);
 						}
 					};
 
@@ -78,6 +88,9 @@ $.ajaxSetup({
 });
 /////////END  handling CSRF token
 
+	//set to wait trans state
+	set_checkbox($(this), -1);
+
 						$.ajax({
 							url: "/api1/book/" + {{book_id}} + "/page/" + page_number + "/set_page_property",
 							type: "POST",
@@ -85,8 +98,9 @@ $.ajaxSetup({
 							context: $(this), //Specifies the "this" value for all AJAX related callback functions; needed, cuz callbacks don't get "this" on their own.
 							data: JSON.stringify({"page_number": page_number, "property": property}),
 							success: function(data, status){
-								console.log("Success!");
-								toggle_checkbox($(this));
+								console.log("Success!");//debug
+								console.log(data);//debug
+								set_checkbox($(this), data.value);
 							},
 							error: function(xhr,status,error){
 								;
@@ -96,9 +110,13 @@ $.ajaxSetup({
 			});
 		</script>
 	{% endif %}
+{% endwith %}
+
 {% endblock %}
 
 {% block body %}
+{% with color_true="green" symbol_true="V" color_false="red" symbol_false="X" %}
+
 Book "{{ book_name }}" stats<br>
 <table>
 	<tr>
@@ -110,14 +128,27 @@ Book "{{ book_name }}" stats<br>
 	</tr>
 	{% for page in book_pages %}
 	<tr>
-		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread%}
+		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread %}
 		<td>Page {{ page.page_number }}</td>
-		<td id="{{page.page_number}}-sketched" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{sketched|yesno:'green,red'}}">{{sketched|yesno:"V,X"}}</td>
-		<td id="{{page.page_number}}-colored" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{colored|yesno:'green,red'}}">{{colored|yesno:"V,X"}}</td>
-		<td id="{{page.page_number}}-edited" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{edited|yesno:'green,red'}}">{{edited|yesno:"V,X"}} </td>
-		<td id="{{page.page_number}}-proofread" class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} style="background-color: {{proofread|yesno:'green,red'}}">{{proofread|yesno:"V,X"}}</td>
+		<td id="{{page.page_number}}-sketched" 
+		class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} 
+		style="background-color: {% if sketched %}{{color_true}}{% else %}{{color_false}}{% endif %}">
+		{% if sketched %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %}</td>
+		<td id="{{page.page_number}}-colored" 
+		class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} 
+		style="background-color: {% if colored %}{{color_true}}{% else %}{{color_false}}{% endif %}">
+		{% if colored %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %}</td>
+		<td id="{{page.page_number}}-edited" 
+		class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} 
+		style="background-color: {% if edited %}{{color_true}}{% else %}{{color_false}}{% endif %}">
+		{% if edited %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %} </td>
+		<td id="{{page.page_number}}-proofread" 
+		class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} 
+		style="background-color: {% if proofread %}{{color_true}}{% else %}{{color_false}}{% endif %}">
+		{% if proofread %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %}</td>
 		{% endwith %}
 	</tr>
 	{% endfor %}
 </table>
+{% endwith %}
 {% endblock %}
