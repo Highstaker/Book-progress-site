@@ -14,6 +14,8 @@
 			//script for checkboxes
 			var COLOR_TRANS = "orange";
 			var SYMBOL_TRANS = "O";
+			var COLOR_ERROR = "white";
+			var SYMBOL_ERROR = "Err";
 			var COLOR_TRUE = "{{color_true}}";
 			var SYMBOL_TRUE = "{{symbol_true}}";
 			var COLOR_FALSE = "{{color_false}}";
@@ -54,6 +56,12 @@
 							elem.css({"background-color": COLOR_TRANS});
 							elem.text(SYMBOL_TRANS);
 						}
+						else if(val == -2)
+						{
+							console.log("Error");
+							elem.css({"background-color": COLOR_ERROR});
+							elem.text(SYMBOL_ERROR);
+						}
 					};
 
 ///////////CSRF token for DJANGO
@@ -89,6 +97,9 @@ $.ajaxSetup({
 /////////END  handling CSRF token
 
 	//set to wait trans state
+	var style_buf = {"background-color": $(this).css("background-color")};
+	var text_buf = $(this).text();
+	console.log("text_buf"+ text_buf);//debug
 	set_checkbox($(this), -1);
 
 						$.ajax({
@@ -103,7 +114,9 @@ $.ajaxSetup({
 								set_checkbox($(this), data.value);
 							},
 							error: function(xhr,status,error){
-								;
+								console.log("Error!");//debug
+								console.log(error);//debug
+								set_checkbox($(this), -2);
 							}
 						});
 				});

@@ -38,7 +38,7 @@ def apiTogglePageProperty(request, book_id, page_id):
 		setattr(page, prperty, not getattr(page, prperty))  # toggling
 		new_prperty = getattr(page, prperty)
 	except AttributeError:
-		raise Http404("Property does not exist!")
+		return HttpResponseNotFound("Property does not exist!")
 
 	page.save()  # saving is needed!
 
