@@ -5,6 +5,9 @@ from django.db import models
 class PageInsertionError(Exception):
 	pass
 
+class ArgumentError(Exception):
+	pass
+
 
 class PageQuerySet(models.query.QuerySet):
 	def movePagesBy(self, starting, steps):
@@ -16,7 +19,7 @@ class PageQuerySet(models.query.QuerySet):
 		:return:
 		"""
 		sliced = self.filter(page_number__gte=starting).reverse()
-		print("sliced", sliced)#debug
+		# moves all pages by `steps`.
 		sliced.update(page_number=models.F('page_number')+steps)
 		# for page in reversed(self[starting-1:length]):
 		# 	print("moving ", page.page_number)
@@ -32,7 +35,7 @@ class PageQuerySet(models.query.QuerySet):
 		prev_page = 0
 		for page in self:
 			if page.page_number > prev_page+1:
-				print("prev_page", prev_page, "cur_page", page.page_number)#debug
+				print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
 				page.page_number = prev_page+1
 				page.save()
 			prev_page = page.page_number
@@ -42,13 +45,31 @@ class BookPageManager(models.Manager):
 		return PageQuerySet(self.model, using=self._db)
 
 	def getSortedPagesQueryset(self, book_id):
+		"""
+		Returns a QuerySet of pages from given book sorted by page number.
+		:param book_id: an integer
+		:return:
+		"""
 		return self.filter(book=book_id).order_by('page_number')
 
 	def createWithBookID(self, book_id, page_number):
+		"""
+		Creates a page in a book with given ID
+		:param book_id: an integer
+		:param page_number: of the new page
+		:return:
+		"""
 		book = Book.objects.get(pk=book_id)
 		self.create(page_number=page_number, book=book)
 
 	def insertPages(self, book_id, at, amount):
+		"""
+
+		:param book_id: an integer
+		:param at: pages are inserted BEFORE this page. If at is >= total pages, inserts at the end
+		:param amount:
+		:return:
+		"""
 		if at < 1:
 			raise PageInsertionError("starting index too low!")
 		if amount < 1:
@@ -71,15 +92,40 @@ class BookPageManager(models.Manager):
 		pages.validatePageNumbers()
 		return True
 
+	def deletePages(self, book_id, page_numbers_to_delete):
+		"""
+
+		:param book_id:
+		:param pages_to_delete: list of pages to delete, or one integer to delete one page
+		:raises:ArgumentError - when `page_numbers_to_delete` is neither an integer nor an iterable
+		:return: number of pages deleted
+		"""
+		pages = self.getSortedPagesQueryset(book_id)
+		if isinstance(page_numbers_to_delete, int):
+			# one page provided as integer
+			pages_to_delete = pages.get(page_number=page_numbers_to_delete)
+		else:
+			try:
+				pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
+			except Exception as e:
+				raise ArgumentError("The page number argument is neither an integer nor an iterable!")
+
+		deletion_result = pages_to_delete.delete()
+		number_of_pages_deleted = deletion_result[0]
+		pages.validatePageNumbers()
+		print("deletion_result",deletion_result)#debug
+
+		return number_of_pages_deleted
+
+
+
+
+
 
 class BookPage(models.Model):
 
-	# def getMaximumPageNumber():
-	# 	page_numbers = (i.page_number for i in BookPage.objects.all())
-	# 	return max(page_numbers)+1
-
 	page_number = models.IntegerField(default=1, validators=[MinValueValidator(1)],
-									  verbose_name="Page Number (is assigned automatically)")
+									verbose_name="Page Number (is assigned automatically)")
 	page_name = models.CharField(max_length=200, blank=True)
 	# link to book object this page belongs to.
 	book = models.ForeignKey('Book', on_delete=models.CASCADE)
@@ -91,25 +137,11 @@ class BookPage(models.Model):
 
 	# extra_fields = models.TextField(default=)
 
-	# def save_direct(self, *args, **kwargs):
-	# 	"""
-	# 	Access the save() directly,without all the additional fluff I added for admin.
-	# 	"""
-	# 	super(BookPage, self).save(*args, **kwargs)
-
-	# it is also invoked on create!
-	# def save(self, *args, **kwargs):
-	# 	print("overridden save()")#debug
-	# 	page_numbers = {i.page_number for i in BookPage.objects.filter(book=self.book)}
-	# 	if self.page_number not in page_numbers:
-	# 		self.page_number = max(page_numbers) + 1
-	# 	super(BookPage, self).save(*args, **kwargs)
-
 	def __str__(self):
 		return 'Page {0} of "{1}"'.format(self.page_number, self.book.book_name)
 
 	class Meta:
-		# unique_together = (('page_number', 'book'),)
+		# unique_together = (('page_number', 'book'),) # impedes movement of pages
 		ordering = ('-book', '-page_number',)
 
 	objects = BookPageManager()  # the manager for book pages

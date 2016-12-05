@@ -14,7 +14,14 @@ class BookPageAdmin(admin.ModelAdmin):
 			# set the page number only on creation!
 			max_page = BookPage.objects.filter(book=obj.book).aggregate(Max('page_number'))['page_number__max']
 			obj.page_number = max_page + 1
-		obj.save()
+		obj.save()  # the parent does only this
+
+	def delete_model(self, request, obj):
+		# page_num = obj.page_number
+		book_id = obj.book.pk
+		super(BookPageAdmin, self).delete_model(request, obj)
+		#todo: move other pages to new space
+		BookPage.objects.validatePageNumbers(book_id=book_id)
 
 
 class BookAdmin(admin.ModelAdmin):

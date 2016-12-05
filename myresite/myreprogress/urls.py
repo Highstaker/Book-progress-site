@@ -21,6 +21,8 @@ urlpatterns = [
     url(r'^api1/book/(?P<book_id>[0-9]+)/add_pages$', api_views.apiInsertPages,
         name='API. Add pages to book'),
     url(r'^api1/book/(?P<book_id>[0-9]+)/validate_pages$', api_views.apiValidatePages,
-        name='API. Validate page numbers')
+        name='API. Validate page numbers'),
+    url(r'^api1/book/(?P<book_id>[0-9]+)/delete_pages$', api_views.apiDeletePages,
+        name='API. Delete pages'),
 
 ]
