@@ -1,13 +1,29 @@
 from django.core.validators import MinValueValidator
 from django.db import models
+from django_extensions.db.fields import AutoSlugField
 
 
 class PageInsertionError(Exception):
 	pass
 
+
 class ArgumentError(Exception):
 	pass
 
+def get_book(func):
+	def wrapper(*args, **kwargs):
+		try:
+			book = kwargs['book']
+			if isinstance(book, int):
+				kwargs['book'] = Book.objects.get(pk=book)
+		except KeyError:
+			print(func.__name__, "get_book called but no book keyword provided!")
+			book = args[0]
+			if isinstance(book, int):
+				args = (Book.objects.get(pk=book),) + args[1:]
+		result = func(*args,**kwargs)
+		return result
+	return wrapper
 
 class PageQuerySet(models.query.QuerySet):
 	def movePagesBy(self, starting, steps):
@@ -35,7 +51,7 @@ class PageQuerySet(models.query.QuerySet):
 		prev_page = 0
 		for page in self:
 			if page.page_number > prev_page+1:
-				print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
+				# print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
 				page.page_number = prev_page+1
 				page.save()
 			prev_page = page.page_number
@@ -44,86 +60,23 @@ class BookPageManager(models.Manager):
 	def get_queryset(self):
 		return PageQuerySet(self.model, using=self._db)
 
-	def getSortedPagesQueryset(self, book_id):
+	@get_book
+	def create(self, *args, **kwargs):
+		super(BookPageManager, self).create(*args, **kwargs)
+
+	@get_book
+	def getSortedPagesQueryset(self, book):
 		"""
 		Returns a QuerySet of pages from given book sorted by page number.
-		:param book_id: an integer
+		:param book: an integer
 		:return:
 		"""
-		return self.filter(book=book_id).order_by('page_number')
+		return self.filter(book=book).order_by('page_number')
 
-	def createWithBookID(self, book_id, page_number):
-		"""
-		Creates a page in a book with given ID
-		:param book_id: an integer
-		:param page_number: of the new page
-		:return:
-		"""
-		book = Book.objects.get(pk=book_id)
-		self.create(page_number=page_number, book=book)
-
-	def insertPages(self, book_id, at, amount):
-		"""
-
-		:param book_id: an integer
-		:param at: pages are inserted BEFORE this page. If at is >= total pages, inserts at the end
-		:param amount:
-		:return:
-		"""
-		if at < 1:
-			raise PageInsertionError("starting index too low!")
-		if amount < 1:
-			raise PageInsertionError("cannot insert 0 or negative number of pages!")
-
-		pages = self.getSortedPagesQueryset(book_id)
-		if at > len(pages):
-			# `at` is beyond the end. Set it to the end.
-			at = len(pages)+1
-		else:
-			pages.movePagesBy(at, amount)
-
-		for page_num in range(at, at+amount):
-			self.createWithBookID(page_number=page_num, book_id=book_id)
-
-		return True
-
-	def validatePageNumbers(self, book_id):
-		pages = self.getSortedPagesQueryset(book_id)
-		pages.validatePageNumbers()
-		return True
-
-	def deletePages(self, book_id, page_numbers_to_delete):
-		"""
-
-		:param book_id:
-		:param pages_to_delete: list of pages to delete, or one integer to delete one page
-		:raises:ArgumentError - when `page_numbers_to_delete` is neither an integer nor an iterable
-		:return: number of pages deleted
-		"""
-		pages = self.getSortedPagesQueryset(book_id)
-		if isinstance(page_numbers_to_delete, int):
-			# one page provided as integer
-			pages_to_delete = pages.get(page_number=page_numbers_to_delete)
-		else:
-			try:
-				pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
-			except Exception as e:
-				raise ArgumentError("The page number argument is neither an integer nor an iterable!")
-
-		deletion_result = pages_to_delete.delete()
-		number_of_pages_deleted = deletion_result[0]
-		pages.validatePageNumbers()
-		print("deletion_result",deletion_result)#debug
-
-		return number_of_pages_deleted
-
-
-
-
+# class BookManager(models.Manager):
 
 
 class BookPage(models.Model):
-
 	page_number = models.IntegerField(default=1, validators=[MinValueValidator(1)],
 									verbose_name="Page Number (is assigned automatically)")
 	page_name = models.CharField(max_length=200, blank=True)
@@ -149,7 +102,71 @@ class BookPage(models.Model):
 
 class Book(models.Model):
 	book_name = models.CharField(max_length=300, unique=True)
-	book_slug = models.SlugField(max_length=300, unique=True)
+	book_slug = AutoSlugField(max_length=300, unique=True, blank=False, populate_from=('book_name',))
 
 	def __str__(self):
 		return "{}".format(self.book_name)
+
+	def __repr__(self):
+		return "Book {}".format(self.pk)
+
+	# @get_book
+	def insertPages(self, at, amount):
+		"""
+
+		:param book: an integer
+		:param at: pages are inserted BEFORE this page. If at is >= total pages, inserts at the end
+		:param amount:
+		:return:
+		"""
+		if at < 1:
+			raise PageInsertionError("starting index too low!")
+		if amount < 1:
+			raise PageInsertionError("cannot insert 0 or negative number of pages!")
+
+		pages = BookPage.objects.getSortedPagesQueryset(self)
+		if at > len(pages):
+			# `at` is beyond the end. Set it to the end.
+			at = len(pages) + 1
+		else:
+			pages.movePagesBy(at, amount)
+
+		for page_num in range(at, at + amount):
+			BookPage.objects.create(page_number=page_num, book=self)
+
+		return True
+
+	# @get_book
+	def validatePageNumbers(self):
+		pages = BookPage.objects.getSortedPagesQueryset(self)
+		pages.validatePageNumbers()
+		return True
+
+	# @get_book
+	def deletePages(self, page_numbers_to_delete):
+		"""
+
+		:param book:
+		:param page_numbers_to_delete: list of pages to delete, or one integer to delete one page
+		:raises:ArgumentError - when `page_numbers_to_delete` is neither an integer nor an iterable
+		:return: number of pages deleted
+		"""
+		pages = BookPage.objects.getSortedPagesQueryset(self)
+		if isinstance(page_numbers_to_delete, int):
+			# one page provided as integer
+			page_numbers_to_delete = (page_numbers_to_delete,)
+
+		try:
+			pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
+		except TypeError as e:
+			raise ArgumentError("The page number argument is neither an integer nor an iterable!")
+
+		deletion_result = pages_to_delete.delete()
+		number_of_pages_deleted = deletion_result[0]
+		pages.validatePageNumbers()
+		print("deletion_result", deletion_result)  # debug
+
+		return number_of_pages_deleted
+
+
+	# objects = BookManager()  # the manager for book pages
