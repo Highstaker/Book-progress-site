@@ -1,6 +1,10 @@
 from django.core.validators import MinValueValidator
 from django.db import models
 from django_extensions.db.fields import AutoSlugField
+from django.db import transaction
+
+class PageMovementError(Exception):
+	pass
 
 
 class PageInsertionError(Exception):
@@ -42,19 +46,20 @@ class PageQuerySet(models.query.QuerySet):
 		# 	page.page_number += steps
 		# 	page.save()
 
+
 	def validatePageNumbers(self):
 		"""
-
+		Moves all pages so their page numbers would be consecutive.
 		:return:
 		"""
-		#todo: make it faster. Calling save() every time is slow. Maybe F() objects? https://docs.djangoproject.com/en/1.8/topics/db/queries/#filters-can-reference-fields-on-the-model
-		prev_page = 0
-		for page in self:
-			if page.page_number > prev_page+1:
-				# print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
-				page.page_number = prev_page+1
-				page.save()
-			prev_page = page.page_number
+		with transaction.atomic():
+			prev_page = 0
+			for page in self:
+				if page.page_number > prev_page+1:
+					# print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
+					page.page_number = prev_page+1
+					page.save()
+				prev_page = page.page_number
 
 class BookPageManager(models.Manager):
 	def get_queryset(self):
@@ -72,8 +77,6 @@ class BookPageManager(models.Manager):
 		:return:
 		"""
 		return self.filter(book=book).order_by('page_number')
-
-# class BookManager(models.Manager):
 
 
 class BookPage(models.Model):
@@ -131,8 +134,9 @@ class Book(models.Model):
 		else:
 			pages.movePagesBy(at, amount)
 
-		for page_num in range(at, at + amount):
-			BookPage.objects.create(page_number=page_num, book=self)
+		with transaction.atomic():
+			for page_num in range(at, at + amount):
+				BookPage.objects.create(page_number=page_num, book=self)
 
 		return True
 
@@ -167,6 +171,5 @@ class Book(models.Model):
 		print("deletion_result", deletion_result)  # debug
 
 		return number_of_pages_deleted
-
 
 	# objects = BookManager()  # the manager for book pages

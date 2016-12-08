@@ -18,10 +18,9 @@ class BookPageAdmin(admin.ModelAdmin):
 
 	def delete_model(self, request, obj):
 		# page_num = obj.page_number
-		book_id = obj.book.pk
+		book = obj.book
 		super(BookPageAdmin, self).delete_model(request, obj)
-		#todo: move other pages to new space
-		BookPage.objects.validatePageNumbers(book_id=book_id)
+		book.validatePageNumbers()
 
 
 class BookAdmin(admin.ModelAdmin):

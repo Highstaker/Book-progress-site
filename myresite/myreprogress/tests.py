@@ -1,8 +1,9 @@
 from django.test import TestCase
-from .models import BookPage, Book, PageInsertionError, ArgumentError
+from .models import BookPage, Book, PageInsertionError, ArgumentError, PageMovementError
 from django.db.utils import IntegrityError
 from django.db import transaction
 
+from time import sleep
 
 class BookModelTestCase(TestCase):
 	def test_book_creation(self):
@@ -11,6 +12,8 @@ class BookModelTestCase(TestCase):
 		self.assertEqual(book.book_name, "Myre 1")
 		self.assertEqual(str(book), "Myre 1")
 		self.assertEqual(book.book_slug, "myre-1")
+
+		sleep(10)
 
 		# test creation of a book with existing name
 		with transaction.atomic():
@@ -49,9 +52,37 @@ class BookModelTestCase(TestCase):
 		self.assertEqual(len(pages),0)
 
 class PageQuerySetTestCase(TestCase):
-	pass
-	#todo: test movePagesBy
-	#todo: test validatePageNumbers
+	def setUp(self):
+		Book.objects.create(book_name="Myre 1")
+		Book.objects.create(book_name="Haunter of Dreams")
+
+	def test_move_pages(self):
+		# todo: complete it
+		book = Book.objects.get(book_name="Myre 1")
+
+		for i in range(1,11):
+			BookPage.objects.create(book=book, page_number=i, page_name="Pagina {}".format(i))
+		pages = BookPage.objects.all()
+
+		# move forward
+		pages.movePagesBy(starting=1, steps=5)
+		pages = BookPage.objects.all()
+		self.assertEqual(set(i.page_number for i in pages), set(range(6,16)))
+
+		# move back
+		pages.movePagesBy(starting=1, steps=-5)
+		pages = BookPage.objects.all()		
+		self.assertEqual(set(i.page_number for i in pages), set(range(1,11)))
+
+		#try moving into <=0. Should raise error.
+		with transaction.atomic():
+			self.assertRaises(PageMovementError, pages.movePagesBy(starting=1, steps=-10))
+		pages = BookPage.objects.all()		
+		print(pages)#debug
+
+
+		#test collision. if moving to an already existing number, should raise error
+
 
 class BookPageModelTestCase(TestCase):
 	def setUp(self):
