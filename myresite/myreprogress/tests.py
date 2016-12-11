@@ -3,8 +3,6 @@ from .models import BookPage, Book, PageInsertionError, ArgumentError, PageMovem
 from django.db.utils import IntegrityError
 from django.db import transaction
 
-from time import sleep
-
 class BookModelTestCase(TestCase):
 	def test_book_creation(self):
 		book = Book.objects.create(book_name="Myre 1")
@@ -12,8 +10,6 @@ class BookModelTestCase(TestCase):
 		self.assertEqual(book.book_name, "Myre 1")
 		self.assertEqual(str(book), "Myre 1")
 		self.assertEqual(book.book_slug, "myre-1")
-
-		sleep(10)
 
 		# test creation of a book with existing name
 		with transaction.atomic():
@@ -27,7 +23,7 @@ class BookModelTestCase(TestCase):
 		# it is not, the field will create a different one. Probably...
 		book = Book.objects.create(book_name="Myre_1")
 		book = Book.objects.create(book_name="Myre-1")
-		print("test_book_creation books", [{"__str__": str(i),"slug": i.book_slug} for i in Book.objects.all()])
+		# print("test_book_creation books", [{"__str__": str(i),"slug": i.book_slug} for i in Book.objects.all()])#debug
 
 	def test_book_page_assignment(self):
 		book = Book.objects.create(book_name="Myre 1")
@@ -35,7 +31,7 @@ class BookModelTestCase(TestCase):
 			BookPage.objects.create(book=book, page_number=i, page_name="Pagina {}".format(i))
 
 		pages = BookPage.objects.all().order_by("page_number")
-		print("test_book_page_assignment", "pages", pages)
+		# print("test_book_page_assignment", "pages", pages)#debug
 		self.assertEqual(len(pages),10)
 		for n, i in enumerate(pages):
 			self.assertEqual(i.page_number, n+1)
@@ -48,7 +44,7 @@ class BookModelTestCase(TestCase):
 
 		book.delete()
 		pages = BookPage.objects.all()
-		print("test_book_deletion", "pages after deletion", pages)
+		# print("test_book_deletion", "pages after deletion", pages)#debug
 		self.assertEqual(len(pages),0)
 
 class PageQuerySetTestCase(TestCase):
@@ -57,7 +53,6 @@ class PageQuerySetTestCase(TestCase):
 		Book.objects.create(book_name="Haunter of Dreams")
 
 	def test_move_pages(self):
-		# todo: complete it
 		book = Book.objects.get(book_name="Myre 1")
 
 		for i in range(1,11):
@@ -76,12 +71,16 @@ class PageQuerySetTestCase(TestCase):
 
 		#try moving into <=0. Should raise error.
 		with transaction.atomic():
-			self.assertRaises(PageMovementError, pages.movePagesBy(starting=1, steps=-10))
+			self.assertRaises(PageMovementError, pages.movePagesBy, starting=1, steps=-10)
 		pages = BookPage.objects.all()		
-		print(pages)#debug
+		# print(pages)#debug
 
 
 		#test collision. if moving to an already existing number, should raise error
+		with transaction.atomic():
+			self.assertRaises(PageMovementError, pages.movePagesBy, starting=2, steps=-10)
+		pages = BookPage.objects.all()		
+		# print(pages)#debug
 
 
 class BookPageModelTestCase(TestCase):
@@ -132,7 +131,7 @@ class BookPageModelTestCase(TestCase):
 		with transaction.atomic(): self.assertRaises(PageInsertionError, book.insertPages, at=1, amount=-1)
 
 
-		print("test_page_insertion pages", pages)
+		# print("test_page_insertion pages", pages)#debug
 
 	def test_page_number_validation(self):
 		book = Book.objects.get(book_name="Myre 1")

@@ -3,6 +3,7 @@ from django.db import models
 from django_extensions.db.fields import AutoSlugField
 from django.db import transaction
 
+
 class PageMovementError(Exception):
 	pass
 
@@ -21,7 +22,7 @@ def get_book(func):
 			if isinstance(book, int):
 				kwargs['book'] = Book.objects.get(pk=book)
 		except KeyError:
-			print(func.__name__, "get_book called but no book keyword provided!")
+			# print(func.__name__, "get_book called but no book keyword provided!")
 			book = args[0]
 			if isinstance(book, int):
 				args = (Book.objects.get(pk=book),) + args[1:]
@@ -38,14 +39,19 @@ class PageQuerySet(models.query.QuerySet):
 		:param steps:
 		:return:
 		"""
-		sliced = self.filter(page_number__gte=starting).reverse()
+		sliced = self.filter(page_number__gte=starting)
+
+		if steps < 0:
+			# check for collisions or going into <=0
+			real_starting = sliced.aggregate(real_starting=models.Min('page_number'))["real_starting"]
+			if real_starting + steps <= 0:
+				raise PageMovementError("Some page numbers will result at 0 or negative. This is not permitted!")
+			elif len(self.filter(page_number__lt=real_starting, page_number__gte=real_starting+steps)):
+				# there are pages in the way!
+				raise PageMovementError("Cannot move! There are existing pages in the way.")
+
 		# moves all pages by `steps`.
 		sliced.update(page_number=models.F('page_number')+steps)
-		# for page in reversed(self[starting-1:length]):
-		# 	print("moving ", page.page_number)
-		# 	page.page_number += steps
-		# 	page.save()
-
 
 	def validatePageNumbers(self):
 		"""
@@ -60,6 +66,7 @@ class PageQuerySet(models.query.QuerySet):
 					page.page_number = prev_page+1
 					page.save()
 				prev_page = page.page_number
+
 
 class BookPageManager(models.Manager):
 	def get_queryset(self):
@@ -168,7 +175,6 @@ class Book(models.Model):
 		deletion_result = pages_to_delete.delete()
 		number_of_pages_deleted = deletion_result[0]
 		pages.validatePageNumbers()
-		print("deletion_result", deletion_result)  # debug
 
 		return number_of_pages_deleted
 
