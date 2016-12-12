@@ -1,3 +1,4 @@
 #!/bin/bash
-echo $@
-env/bin/python3 myresite/manage.py $@
+
+cd myresite
+../env/bin/python3 manage.py $@

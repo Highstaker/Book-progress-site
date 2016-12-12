@@ -4,6 +4,8 @@ from . import views
 from .api import api_views
 from django.contrib.auth import views as auth_views
 
+app_name = 'myreprogress'
+
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^index\.html$', views.index, name='index'),
