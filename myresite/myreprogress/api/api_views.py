@@ -1,10 +1,11 @@
 import json
+from functools import wraps
 
 from django.contrib.auth.decorators import user_passes_test
 from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
-from django.http import JsonResponse, Http404, HttpResponseNotFound, HttpResponseServerError
+from django.http import JsonResponse, Http404, HttpResponseNotFound, HttpResponseServerError, HttpResponseForbidden, HttpResponseBadRequest
 from ..models import Book, BookPage, PageInsertionError
 from .data_constructor import construct_pages
 
@@ -13,6 +14,15 @@ SUCCESS_RESPONSE = JsonResponse(SUCCESS_JSON_DICT)
 
 class PostDataError(Exception):
 	pass
+
+def user_is_staff_or_forbidden(f):
+	@wraps(f)
+	def _wrapped_view(request, *args, **kwargs):
+		if not request.user.is_staff:
+			return HttpResponseForbidden("Not staff!")
+		else:
+			return f(request, *args, **kwargs)
+	return _wrapped_view
 
 def getPostData(request):
 	try:
@@ -30,17 +40,22 @@ def apiBookPages(request, book_id):
 
 @ensure_csrf_cookie
 @require_http_methods(["POST"])
-@user_passes_test(lambda user: user.is_staff)
-def apiTogglePageProperty(request, book_id, page_id):
-	# todo: validate all received data!
-
+@user_is_staff_or_forbidden
+def apiTogglePageProperty(request, book_id, page_number):
 	try:
-		page = BookPage.objects.get(book=book_id, page_number=page_id)
+		page = BookPage.objects.get(book=book_id, page_number=page_number)
 	except :
 		raise Http404("Page does not exist!")
 
-	data = getPostData(request)
-	prperty = data["property"]
+	try:
+		data = getPostData(request)
+	except PostDataError as e:
+		return HttpResponseBadRequest(str(e))
+
+	try:
+		prperty = data["property"]
+	except KeyError:
+		return HttpResponseBadRequest("Data contains no properties!")
 
 	try:
 		setattr(page, prperty, not getattr(page, prperty))  # toggling
