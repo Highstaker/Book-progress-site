@@ -31,7 +31,10 @@ def getPostData(request):
 		raise PostDataError("Could not get POST data: " + str(e))
 
 def apiBookPages(request, book_id):
-	book = Book.objects.get(pk=book_id)
+	try:
+		book = Book.objects.get(pk=book_id)
+	except Book.DoesNotExist:
+		raise Http404("Book with id {} does not exist!".format(book_id))
 	book_name = book.book_name
 	book_pages = BookPage.objects.filter(book=book_id)
 
