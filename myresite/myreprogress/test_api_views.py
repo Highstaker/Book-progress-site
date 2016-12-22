@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 class APIViewsTestCase(TestCase):
 	def setUp(self):
 		self.my_admin = User.objects.create_superuser('highstaker', 'highstaker@test.com', "qwerty12345")
+		self.regular_user = User.objects.create_user('dummy', 'dummy@dummy.dum', 'asdfghjkl12345')
 
 	def test_toggle_page_property(self):
 		PAGE_NAME = "myreprogress:API. Set page property"
@@ -25,6 +26,13 @@ class APIViewsTestCase(TestCase):
 		response = self.client.post(reverse(PAGE_NAME,
 										kwargs={'book_id': '1', 'page_number': '1'}))
 		self.assertEqual(response.status_code, 403)
+
+		# try posting with a non-staff user, should raise 403
+		response = self.client.force_login(self.regular_user)
+		response = self.client.post(reverse(PAGE_NAME,
+										kwargs={'book_id': '1', 'page_number': '1'}))
+		self.assertEqual(response.status_code, 403)
+		self.client.logout()
 
 		# response = self.client.login(username='highstaker', password='qwerty12345')
 		response = self.client.force_login(self.my_admin)
@@ -125,7 +133,16 @@ class APIViewsTestCase(TestCase):
 		self.assertEqual(page2.colored, True)
 		self.assertEqual(page2.edited, True)
 		self.assertEqual(page2.proofread, False)
-		
+
+		# testing after logout. Should return 403
+		self.client.logout()
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1', 'page_number': '2'}),
+									content_type='application/json',
+									data='{"property": "colored"}',
+									)
+		self.assertEqual(response.status_code, 403)
+
 	def test_api_book_pages(self):
 		PAGE_NAME = "myreprogress:API. Book Pages"
 		book1 = Book.objects.create(book_name="Myre 1")
@@ -161,3 +178,76 @@ class APIViewsTestCase(TestCase):
 		self.assertEqual(data["pages"], dict())
 		self.assertEqual(data["book_name"], "Haunter of Dreams")
 		
+	def test_api_insert_pages(self):
+		PAGE_NAME = "myreprogress:API. Add pages to book"
+		book1 = Book.objects.create(book_name="Myre 1")
+		book2 = Book.objects.create(book_name="Haunter of Dreams")
+
+		# test with GET, should return status 405 because only POST is allowed
+		response = self.client.get(reverse(PAGE_NAME,
+										   kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 405)
+
+		# try posting without logging in, should raise 403
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 403)
+
+		# try posting with a non-staff user, should raise 403
+		response = self.client.force_login(self.regular_user)
+		response = self.client.post(reverse(PAGE_NAME,
+										kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 403)
+		self.client.logout()
+
+		# response = self.client.login(username='highstaker', password='qwerty12345')
+		response = self.client.force_login(self.my_admin)
+
+		# Testing empty data. should return 400 - bad request
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 400)
+
+		# Testing corrupt data. should return 400 - bad request
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}),
+									content_type='application/json',
+									data='{"prperty": "sketched"}',
+									)
+		self.assertEqual(response.status_code, 400)
+
+		# Testing nonexistent book. should return 404
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '10'}),
+										content_type='application/json',
+										data='{"insert_at": "1", "pages_amount": 1}',
+										)
+		self.assertEqual(response.status_code, 404)
+
+		# Insertion of one page. Should return status 200 and add this page as page 1 of the first
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}),
+										content_type='application/json',
+										data='{"insert_at": 1, "pages_amount": 1}',
+										)
+		self.assertEqual(response.status_code, 200)
+		self.assertContains(response, text="OK", status_code=200,)
+
+
+		# testing after logout. Should return 403
+		self.client.logout()
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}),#TODO: different params and data here
+										content_type='application/json',
+										data='{"insert_at": 1, "pages_amount": 10}',
+									)
+		self.assertEqual(response.status_code, 403)
+
+
+	def test_api_validate_pages(self):
+		# TODO: test it!
+		pass
+
+	def test_api_delete_pages(self):
+		# TODO: test it!
+		pass

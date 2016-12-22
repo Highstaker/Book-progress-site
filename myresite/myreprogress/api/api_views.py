@@ -73,30 +73,42 @@ def apiTogglePageProperty(request, book_id, page_number):
 
 	return JsonResponse(response)
 
-@csrf_exempt # todo: set CSRF protection after testing
-# @ensure_csrf_cookie
+# @csrf_exempt # todo: set CSRF protection after testing
+@ensure_csrf_cookie
 @require_http_methods(["POST"])
-# @user_passes_test(lambda user: user.is_staff) # todo: uncomment after testing!
+@user_is_staff_or_forbidden # todo: uncomment after testing!
 def apiInsertPages(request, book_id):
-	# todo: validate all received data!
-
-	data = getPostData(request)
-	# a position where the pages will be inserted, basically the page BEFORE which the new pages are put.
-	insert_at = int(data["insert_at"])# todo: handle exceptions for unfound attributes in getPostData!
-	# amount of pages to insert
-	pages_amount = int(data["pages_amount"])
+	try:
+		book = Book.objects.get(pk=book_id)
+	except :
+		raise Http404("Page does not exist!")
 
 	try:
-		BookPage.objects.insertPages(book_id, insert_at, pages_amount)
+		data = getPostData(request)
+	except PostDataError as e:
+		return HttpResponseBadRequest(str(e))
+
+	try:
+		# a position where the pages will be inserted, basically the page BEFORE which the new pages are put.
+		insert_at = int(data["insert_at"])
+		# amount of pages to insert
+		pages_amount = int(data["pages_amount"])
+	except ValueError:
+		return HttpResponseBadRequest("Data is not numerical!")
+	except KeyError:
+		return HttpResponseBadRequest("Data does nto contain parameters!")
+
+	try:
+		book.insertPages(insert_at, pages_amount)
 	except PageInsertionError as e:
 		return HttpResponseNotFound(str(e))
 
 	return SUCCESS_RESPONSE
 
-@csrf_exempt # todo: set CSRF protection after testing
-# @ensure_csrf_cookie
+# @csrf_exempt # todo: set CSRF protection after testing
+@ensure_csrf_cookie
 @require_http_methods(["POST"])
-# @user_passes_test(lambda user: user.is_staff) # todo: uncomment after testing!
+@user_is_staff_or_forbidden # todo: uncomment after testing!
 def apiValidatePages(request, book_id):
 	# todo: validate all received data!
 
@@ -107,10 +119,10 @@ def apiValidatePages(request, book_id):
 
 	return SUCCESS_RESPONSE
 
-@csrf_exempt # todo: set CSRF protection after testing
-# @ensure_csrf_cookie
+# @csrf_exempt # todo: set CSRF protection after testing
+@ensure_csrf_cookie
 @require_http_methods(["POST"])
-# @user_passes_test(lambda user: user.is_staff) # todo: uncomment after testing!
+@user_is_staff_or_forbidden # todo: uncomment after testing!
 def apiDeletePages(request, book_id):
 	data = getPostData(request)
 	# todo: validate all received data!
