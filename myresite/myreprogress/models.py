@@ -120,6 +120,8 @@ class Book(models.Model):
 	def __repr__(self):
 		return "Book {}".format(self.pk)
 
+	# TODO: create getPages() method to get all pages of a book from book model
+
 	# @get_book
 	def insertPages(self, at, amount):
 		"""

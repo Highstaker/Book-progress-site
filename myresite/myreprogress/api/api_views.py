@@ -81,7 +81,7 @@ def apiInsertPages(request, book_id):
 	try:
 		book = Book.objects.get(pk=book_id)
 	except :
-		raise Http404("Page does not exist!")
+		raise Http404("Book does not exist!")
 
 	try:
 		data = getPostData(request)
@@ -110,10 +110,13 @@ def apiInsertPages(request, book_id):
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden # todo: uncomment after testing!
 def apiValidatePages(request, book_id):
-	# todo: validate all received data!
+	try:
+		book = Book.objects.get(pk=book_id)
+	except :
+		raise Http404("Book does not exist!")
 
 	try:
-		BookPage.objects.validatePageNumbers(book_id)
+		book.validatePageNumbers()
 	except Exception as e:
 		return HttpResponseServerError(str(e))
 

@@ -243,10 +243,50 @@ class APIViewsTestCase(TestCase):
 									)
 		self.assertEqual(response.status_code, 403)
 
-
 	def test_api_validate_pages(self):
-		# TODO: test it!
-		pass
+		PAGE_NAME = "myreprogress:API. Validate page numbers"
+		book1 = Book.objects.create(book_name="Myre 1")
+		for i in range(2, 30, 3):
+			BookPage.objects.create(book=book1, page_number=i, page_name="Pagina {}".format(i))
+
+		# test with GET, should return status 405 because only POST is allowed
+		response = self.client.get(reverse(PAGE_NAME,
+										   kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 405)
+
+		# try posting without logging in, should raise 403
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 403)
+
+		# try posting with a non-staff user, should raise 403
+		response = self.client.force_login(self.regular_user)
+		response = self.client.post(reverse(PAGE_NAME,
+										kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 403)
+		self.client.logout()
+
+		# response = self.client.login(username='highstaker', password='qwerty12345')
+		response = self.client.force_login(self.my_admin)
+
+		# Testing nonexistent book. should return 404
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '10'}),
+										)
+		self.assertEqual(response.status_code, 404)
+
+		# Testing as should be. No data needed for this function. Should return 200 and validate the pages.
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}))
+		self.assertEqual(response.status_code, 200)
+		self.assertEqual(set(range(1,11)), set(i.page_number for i in BookPage.objects.getSortedPagesQueryset(book1)))
+
+		# testing after logout. Should return 403
+		self.client.logout()
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}),#TODO: different params and data here
+									)
+		self.assertEqual(response.status_code, 403)
 
 	def test_api_delete_pages(self):
 		# TODO: test it!
