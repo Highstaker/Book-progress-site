@@ -122,7 +122,13 @@ class Book(models.Model):
 
 	# TODO: create getPages() method to get all pages of a book from book model
 
-	# @get_book
+	def getPages(self):
+		"""
+		Calls BookPage.objects.getSortedPagesQueryset to return a sorted QuerySet of all pages in this book
+		:return: sorted QuerySet of all pages in this book
+		"""
+		return BookPage.objects.getSortedPagesQueryset(self)
+
 	def insertPages(self, at, amount):
 		"""
 
@@ -149,13 +155,11 @@ class Book(models.Model):
 
 		return True
 
-	# @get_book
 	def validatePageNumbers(self):
 		pages = BookPage.objects.getSortedPagesQueryset(self)
 		pages.validatePageNumbers()
 		return True
 
-	# @get_book
 	def deletePages(self, page_numbers_to_delete):
 		"""
 

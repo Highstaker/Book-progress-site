@@ -279,7 +279,7 @@ class APIViewsTestCase(TestCase):
 		response = self.client.post(reverse(PAGE_NAME,
 											kwargs={'book_id': '1'}))
 		self.assertEqual(response.status_code, 200)
-		self.assertEqual(set(range(1,11)), set(i.page_number for i in BookPage.objects.getSortedPagesQueryset(book1)))
+		self.assertEqual(set(range(1,11)), set(i.page_number for i in book1.getPages()))
 
 		# testing after logout. Should return 403
 		self.client.logout()

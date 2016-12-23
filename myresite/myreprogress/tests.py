@@ -23,7 +23,6 @@ class BookModelTestCase(TestCase):
 		# it is not, the field will create a different one. Probably...
 		book = Book.objects.create(book_name="Myre_1")
 		book = Book.objects.create(book_name="Myre-1")
-		# print("test_book_creation books", [{"__str__": str(i),"slug": i.book_slug} for i in Book.objects.all()])#debug
 
 	def test_book_page_assignment(self):
 		book = Book.objects.create(book_name="Myre 1")
@@ -31,7 +30,6 @@ class BookModelTestCase(TestCase):
 			BookPage.objects.create(book=book, page_number=i, page_name="Pagina {}".format(i))
 
 		pages = BookPage.objects.all().order_by("page_number")
-		# print("test_book_page_assignment", "pages", pages)#debug
 		self.assertEqual(len(pages),10)
 		for n, i in enumerate(pages):
 			self.assertEqual(i.page_number, n+1)
@@ -44,8 +42,18 @@ class BookModelTestCase(TestCase):
 
 		book.delete()
 		pages = BookPage.objects.all()
-		# print("test_book_deletion", "pages after deletion", pages)#debug
-		self.assertEqual(len(pages),0)
+		self.assertEqual(len(pages), 0)
+
+	def test_book_get_pages(self):
+		book = Book.objects.create(book_name="Myre 1")
+		for i in range(1, 11):
+			BookPage.objects.create(book=book, page_number=i, page_name="Pagina {}".format(i))
+
+		pages = book.getPages()
+		print(pages)#debug
+		self.assertEqual(set(range(1, 11)), set(i.page_number for i in pages))
+		self.assertEqual(set("Pagina {}".format(i) for i in range(1, 11)), set(i.page_name for i in pages))
+
 
 class PageQuerySetTestCase(TestCase):
 	def setUp(self):
