@@ -13,6 +13,7 @@ class PageInsertionError(Exception):
 
 
 class ArgumentError(Exception):
+	"""Raised if an argument is not suitable for the method."""
 	pass
 
 def get_book(func):
@@ -132,9 +133,8 @@ class Book(models.Model):
 	def insertPages(self, at, amount):
 		"""
 
-		:param book: an integer
 		:param at: pages are inserted BEFORE this page. If at is >= total pages, inserts at the end
-		:param amount:
+		:param amount: number of pages to insert
 		:return:
 		"""
 		if at < 1:
@@ -142,7 +142,7 @@ class Book(models.Model):
 		if amount < 1:
 			raise PageInsertionError("cannot insert 0 or negative number of pages!")
 
-		pages = BookPage.objects.getSortedPagesQueryset(self)
+		pages = self.getPages()
 		if at > len(pages):
 			# `at` is beyond the end. Set it to the end.
 			at = len(pages) + 1
@@ -156,26 +156,25 @@ class Book(models.Model):
 		return True
 
 	def validatePageNumbers(self):
-		pages = BookPage.objects.getSortedPagesQueryset(self)
+		pages = self.getPages()
 		pages.validatePageNumbers()
 		return True
 
 	def deletePages(self, page_numbers_to_delete):
 		"""
 
-		:param book:
 		:param page_numbers_to_delete: list of pages to delete, or one integer to delete one page
 		:raises:ArgumentError - when `page_numbers_to_delete` is neither an integer nor an iterable
 		:return: number of pages deleted
 		"""
-		pages = BookPage.objects.getSortedPagesQueryset(self)
+		pages = self.getPages()
 		if isinstance(page_numbers_to_delete, int):
 			# one page provided as integer
 			page_numbers_to_delete = (page_numbers_to_delete,)
 
 		try:
 			pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
-		except TypeError as e:
+		except (ValueError ,TypeError) as e:
 			raise ArgumentError("The page number argument is neither an integer nor an iterable!")
 
 		deletion_result = pages_to_delete.delete()

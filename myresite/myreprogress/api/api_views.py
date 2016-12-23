@@ -6,7 +6,7 @@ from django.views.decorators.http import require_http_methods
 from django.views.decorators.csrf import csrf_protect, csrf_exempt, ensure_csrf_cookie
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.http import JsonResponse, Http404, HttpResponseNotFound, HttpResponseServerError, HttpResponseForbidden, HttpResponseBadRequest
-from ..models import Book, BookPage, PageInsertionError
+from ..models import Book, BookPage, PageInsertionError, ArgumentError
 from .data_constructor import construct_pages
 
 SUCCESS_JSON_DICT = {"status": "OK"}
@@ -96,7 +96,7 @@ def apiInsertPages(request, book_id):
 	except ValueError:
 		return HttpResponseBadRequest("Data is not numerical!")
 	except KeyError:
-		return HttpResponseBadRequest("Data does nto contain parameters!")
+		return HttpResponseBadRequest("Data does not contain parameters!")
 
 	try:
 		book.insertPages(insert_at, pages_amount)
@@ -127,14 +127,28 @@ def apiValidatePages(request, book_id):
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden # todo: uncomment after testing!
 def apiDeletePages(request, book_id):
-	data = getPostData(request)
-	# todo: validate all received data!
+	try:
+		book = Book.objects.get(pk=book_id)
+	except :
+		raise Http404("Book does not exist!")
 
-	# a list
-	pages_to_delete = data["pages_to_delete"]
+	try:
+		data = getPostData(request)
+	except PostDataError as e:
+		return HttpResponseBadRequest(str(e))
 
-	number_of_pages_deleted = BookPage.objects.deletePages(book_id, pages_to_delete)
-	response = {"number_of_pages_deleted":number_of_pages_deleted}
+	try:
+		# a list
+		pages_to_delete = data["pages_to_delete"]
+	except KeyError:
+		return HttpResponseBadRequest("Data does not contain parameters!")
+
+	try:
+		number_of_pages_deleted = book.deletePages(pages_to_delete)
+	except ArgumentError:
+		return HttpResponseBadRequest("Bad data! It should be either an integer or a list of integers!")
+
+	response = {"number_of_pages_deleted": number_of_pages_deleted}
 	response.update(SUCCESS_JSON_DICT)
 
 	return JsonResponse(response)

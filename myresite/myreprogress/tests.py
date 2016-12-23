@@ -50,7 +50,6 @@ class BookModelTestCase(TestCase):
 			BookPage.objects.create(book=book, page_number=i, page_name="Pagina {}".format(i))
 
 		pages = book.getPages()
-		print(pages)#debug
 		self.assertEqual(set(range(1, 11)), set(i.page_number for i in pages))
 		self.assertEqual(set("Pagina {}".format(i) for i in range(1, 11)), set(i.page_name for i in pages))
 
