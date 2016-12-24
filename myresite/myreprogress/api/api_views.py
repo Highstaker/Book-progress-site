@@ -12,8 +12,10 @@ from .data_constructor import construct_pages
 SUCCESS_JSON_DICT = {"status": "OK"}
 SUCCESS_RESPONSE = JsonResponse(SUCCESS_JSON_DICT)
 
+
 class PostDataError(Exception):
 	pass
+
 
 def user_is_staff_or_forbidden(f):
 	@wraps(f)
@@ -24,11 +26,13 @@ def user_is_staff_or_forbidden(f):
 			return f(request, *args, **kwargs)
 	return _wrapped_view
 
+
 def getPostData(request):
 	try:
 		return json.loads(request.body.decode())
 	except Exception as e:
 		raise PostDataError("Could not get POST data: " + str(e))
+
 
 def apiBookPages(request, book_id):
 	try:
@@ -41,9 +45,9 @@ def apiBookPages(request, book_id):
 	return JsonResponse(construct_pages(book_name, book_pages))
 
 
-@ensure_csrf_cookie
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden
+@ensure_csrf_cookie
 def apiTogglePageProperty(request, book_id, page_number):
 	try:
 		page = BookPage.objects.get(book=book_id, page_number=page_number)
@@ -73,10 +77,11 @@ def apiTogglePageProperty(request, book_id, page_number):
 
 	return JsonResponse(response)
 
+
 # @csrf_exempt # todo: set CSRF protection after testing
-@ensure_csrf_cookie
 @require_http_methods(["POST"])
-@user_is_staff_or_forbidden # todo: uncomment after testing!
+@user_is_staff_or_forbidden
+@ensure_csrf_cookie
 def apiInsertPages(request, book_id):
 	try:
 		book = Book.objects.get(pk=book_id)
@@ -105,10 +110,11 @@ def apiInsertPages(request, book_id):
 
 	return SUCCESS_RESPONSE
 
+
 # @csrf_exempt # todo: set CSRF protection after testing
-@ensure_csrf_cookie
 @require_http_methods(["POST"])
-@user_is_staff_or_forbidden # todo: uncomment after testing!
+@user_is_staff_or_forbidden
+@ensure_csrf_cookie
 def apiValidatePages(request, book_id):
 	try:
 		book = Book.objects.get(pk=book_id)
@@ -122,10 +128,11 @@ def apiValidatePages(request, book_id):
 
 	return SUCCESS_RESPONSE
 
+
 # @csrf_exempt # todo: set CSRF protection after testing
-@ensure_csrf_cookie
 @require_http_methods(["POST"])
-@user_is_staff_or_forbidden # todo: uncomment after testing!
+@user_is_staff_or_forbidden
+@ensure_csrf_cookie
 def apiDeletePages(request, book_id):
 	try:
 		book = Book.objects.get(pk=book_id)

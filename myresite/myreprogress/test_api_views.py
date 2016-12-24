@@ -1,5 +1,5 @@
 import json
-from django.test import TestCase
+from django.test import TestCase, Client
 from .models import Book, BookPage
 from django.urls import reverse
 from django.contrib.auth.models import User
@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 
 class APIViewsTestCase(TestCase):
 	def setUp(self):
+		self.client = Client(enforce_csrf_checks=False)
+
 		self.my_admin = User.objects.create_superuser('highstaker', 'highstaker@test.com', "qwerty12345")
 		self.regular_user = User.objects.create_user('dummy', 'dummy@dummy.dum', 'asdfghjkl12345')
 
