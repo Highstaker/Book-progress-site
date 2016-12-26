@@ -2,6 +2,7 @@ from django.contrib import admin
 from django.db.models import Max
 from .models import BookPage, Book
 
+#TODO: check and test!
 
 class BookPageAdmin(admin.ModelAdmin):
 	# fields NOT to show in Edit Page.

@@ -11,7 +11,7 @@
 
 	{% if user.is_staff %}
 		<script type="text/javascript">
-			//script for checkboxes
+			//script for checkboxes and forms
 			var COLOR_TRANS = "orange";
 			var SYMBOL_TRANS = "O";
 			var COLOR_ERROR = "white";
@@ -21,48 +21,7 @@
 			var COLOR_FALSE = "{{color_false}}";
 			var SYMBOL_FALSE = "{{symbol_false}}";
 
-			$(document).ready(function(){
-				console.log("Script started");
-				$(".editable_checkbox").click(function(event){
-					console.log("Clicked!");//debug
 
-					var id = $(this).attr('id');
-					var parse = id.split("-");
-					var page_number = parse[0];
-					var property = parse[1];
-					console.log(property);//debug
-					console.log("tosend" + JSON.stringify({"page_number": page_number, "property": property}));//debug
-
-					var set_checkbox = function(elem, val){
-						//toggles what the checkbox looks like
-						var text = elem.text().trim();
-						console.log(text);
-
-						if(val == 0)
-						{
-							console.log("Turning off");
-							elem.css({"background-color": COLOR_FALSE});
-							elem.text(SYMBOL_FALSE);
-						}
-						else if(val == 1)
-						{
-							console.log("Turning on");
-							elem.css({"background-color": COLOR_TRUE});
-							elem.text(SYMBOL_TRUE);
-						}
-						else if(val == -1)
-						{
-							console.log("Transition");
-							elem.css({"background-color": COLOR_TRANS});
-							elem.text(SYMBOL_TRANS);
-						}
-						else if(val == -2)
-						{
-							console.log("Error");
-							elem.css({"background-color": COLOR_ERROR});
-							elem.text(SYMBOL_ERROR);
-						}
-					};
 
 ///////////CSRF token for DJANGO
 // using jQuery
@@ -96,10 +55,44 @@ $.ajaxSetup({
 });
 /////////END  handling CSRF token
 
+
+			$(document).ready(function(){
+				console.log("Script started");
+				$(".editable_checkbox").click(function(event){
+					var id = $(this).attr('id');
+					var parse = id.split("-");
+					var page_number = parse[0];
+					var property = parse[1];
+
+					var set_checkbox = function(elem, val){
+						//toggles what the checkbox looks like
+						var text = elem.text().trim();
+
+						if(val == 0)
+						{
+							elem.css({"background-color": COLOR_FALSE});
+							elem.text(SYMBOL_FALSE);
+						}
+						else if(val == 1)
+						{
+							elem.css({"background-color": COLOR_TRUE});
+							elem.text(SYMBOL_TRUE);
+						}
+						else if(val == -1)
+						{
+							elem.css({"background-color": COLOR_TRANS});
+							elem.text(SYMBOL_TRANS);
+						}
+						else if(val == -2)
+						{
+							elem.css({"background-color": COLOR_ERROR});
+							elem.text(SYMBOL_ERROR);
+						}
+					};
+
 	//set to wait trans state
 	var style_buf = {"background-color": $(this).css("background-color")};
 	var text_buf = $(this).text();
-	console.log("text_buf"+ text_buf);//debug
 	set_checkbox($(this), -1);
 
 						$.ajax({
@@ -110,17 +103,47 @@ $.ajaxSetup({
 							data: JSON.stringify({"page_number": page_number, "property": property}),
 							success: function(data, status){
 								console.log("Success!");//debug
-								console.log(data);//debug
 								set_checkbox($(this), data.value);
 							},
-							error: function(xhr,status,error){
+							error: function(xhr, status, error){
 								console.log("Error!");//debug
 								console.log(error);//debug
 								set_checkbox($(this), -2);
 							}
 						});
-				});
-			});
+				});//editable_checkbox click
+
+				//TODO: make routines for forms (AJAX callbacks to API).
+
+				$("#insert-page-form").submit(function(e){
+					console.log("#insert-page-form");//debug
+
+					var insert_at = $("#id_insert_at").val();
+					var pages_amount = $("#id_amount").val();
+					console.log(insert_at + " " + pages_amount);//debug
+
+					$.ajax({
+						url: "{% url 'myreprogress:API. Add pages to book' book_id=book_id %}",
+						type: "POST",
+						dataType: "Json",
+						context: $(this), //Specifies the "this" value for all AJAX related callback functions; needed, cuz callbacks don't get "this" on their own.
+						data: JSON.stringify({"insert_at": insert_at, "pages_amount": pages_amount}),
+						success: function(data, status){
+							console.log("Insertion success!");//debug
+							console.log(data);//debug
+						},
+						error: function(xhr, status, error){
+							console.log("Error!");//debug
+							console.log(status);//debug
+							console.log(error);//debug
+						}
+					});
+
+					// return false; // prevents refresh
+					return true;
+				;})//$("#insert-page-form").submit
+
+			});//ready
 		</script>
 	{% endif %}
 {% endwith %}
@@ -131,6 +154,15 @@ $.ajaxSetup({
 {% with color_true="green" symbol_true="V" color_false="red" symbol_false="X" %}
 
 Book "{{ book_name }}" stats<br>
+
+{% if user.is_staff %}
+	<form method="post" id="insert-page-form">
+		{% csrf_token %}
+		{{ insert_page_form.as_p }}
+		<input type="submit" value="Submit" />
+	</form>
+{% endif %}
+
 <table>
 	<tr>
 		<th>Page number</th>
