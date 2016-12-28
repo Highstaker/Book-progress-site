@@ -115,6 +115,11 @@ $.ajaxSetup({
 
 				//TODO: make routines for forms (AJAX callbacks to API).
 
+				$("#insert-page-form-toggle-button").click(function(){
+				$("#insert-page-form").slideToggle("fast", "linear");
+				});
+				$("#insert-page-form").hide();//The benefit of this version over style "display:none": if jquery disappears, we default to form being shown.
+
 				$("#insert-page-form").submit(function(e){
 					console.log("#insert-page-form");//debug
 
@@ -156,10 +161,11 @@ $.ajaxSetup({
 Book "{{ book_name }}" stats<br>
 
 {% if user.is_staff %}
+	<button type="button" id="insert-page-form-toggle-button">Insert pages</button>
 	<form method="post" id="insert-page-form">
 		{% csrf_token %}
 		{{ insert_page_form.as_p }}
-		<input type="submit" value="Submit" />
+		<input type="submit" value="Insert" />
 	</form>
 {% endif %}
 
