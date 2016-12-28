@@ -165,9 +165,36 @@ $.ajaxSetup({
 							console.log(status);//debug
 							console.log(error);//debug
 						}
-					});
+					});//ajax
 
 				});//$("#validate-pages-button").click
+
+				$(".page-delete-button").click(function(event){
+					var id = $(this).attr('id');
+					var parse = id.split("-");
+					var page_number = parse[0];
+
+					$.ajax({
+						url: "{% url 'myreprogress:API. Delete pages' book_id=book_id %}",
+						type: "POST",
+						dataType: "Json",
+						context: $(this), //Specifies the "this" value for all AJAX related callback functions; needed, cuz callbacks don't get "this" on their own.
+						data: JSON.stringify({"pages_to_delete": page_number}),
+						success: function(data, status){
+							console.log("Deletion success!");//debug
+							console.log(data);//debug
+							location.reload();
+						},
+						error: function(xhr, status, error){
+							console.log("Deletion error!");//debug
+							console.log(status);//debug
+							console.log(error);//debug
+						}
+					});//ajax
+
+
+
+				});//$(".page-delete-button").click
 
 			});//ready
 		</script>
@@ -193,6 +220,9 @@ Book "{{ book_name }}" stats<br>
 
 <table>
 	<tr>
+		{% if user.is_staff %}
+		<th></th><!-- delete buttons under this one-->
+		{% endif %}
 		<th>Page number</th>
 		<th>sketched </th>
 		<th>colored</th>
@@ -202,6 +232,9 @@ Book "{{ book_name }}" stats<br>
 	{% for page in book_pages %}
 	<tr>
 		{% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread %}
+		{% if user.is_staff %}
+		<td><button type="button" id="{{page.page_number}}-delete-button" class="page-delete-button">X</button></td>
+		{% endif %}
 		<td>Page {{ page.page_number }}</td>
 		<td id="{{page.page_number}}-sketched" 
 		class={% if user.is_staff %}"editable_checkbox"{% else %}"display_checkbox"{% endif %} 
