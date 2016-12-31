@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404, render_to_response, redirect
 from django.template import RequestContext
 from django.http import HttpResponse
+from django.views import View
+from django.views.generic import ListView
 
 from .models import Book, BookPage
 from .forms import PageInsertForm
@@ -9,10 +11,22 @@ from .forms import PageInsertForm
 def index(request):
     return redirect("book/")
 
+class BookChoiceView(ListView):
+    model = Book  # equivalent to providing context object of Book.objects.all() via `queryset`
+    context_object_name = 'books'  # name used for books in template
+    template_name = "myreprogress/book_choice.html"  # the default one would be "myreprogress/book_list.html"
 
-def book_choice(request):
-    books = Book.objects.all()
-    return render(request, "myreprogress/book_choice.html", {"books": books})
+    # in case I need additional parameters
+    def get_context_data(self, **kwargs):
+        # Call the base implementation first to get a context
+        context = super(BookChoiceView, self).get_context_data(**kwargs)
+        context['important_data'] = 'temmie Sez: "h0i!!11"'
+        return context
+
+# old function-based implementation for BookChoiceView
+# def book_choice(request):
+#     books = Book.objects.all()
+#     return render(request, "myreprogress/book_choice.html", {"books": books})
 
 
 def book_stats(request, book_id=None, book_slug=None):
