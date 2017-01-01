@@ -153,7 +153,8 @@ def apiDeletePages(request, book_id):
 	try:
 		number_of_pages_deleted = book.deletePages(pages_to_delete)
 	except ArgumentError:
-		return HttpResponseBadRequest("Bad data! It should be either an integer or a list of integers!")
+		return HttpResponseBadRequest("Bad data! It should be either an integer or a list of integers!"
+							"Check if you have provided a string instead of a number, the function won't accept it!")
 
 	response = {"number_of_pages_deleted": number_of_pages_deleted}
 	response.update(SUCCESS_JSON_DICT)

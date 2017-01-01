@@ -175,8 +175,7 @@ $.ajaxSetup({
 				$(".page-delete-button").click(function(event){
 					var id = $(this).attr('id');
 					var parse = id.split("-");
-					var page_number = parse[0];
-					console.log(page_number)//debug
+					var page_number = parseInt(parse[0]);
 
 					$.ajax({
 						url: "{% url 'myreprogress:API. Delete pages' book_id=book_id %}",
@@ -195,9 +194,6 @@ $.ajaxSetup({
 							console.log(error);//debug
 						}
 					});//ajax
-
-
-
 				});//$(".page-delete-button").click
 
 			});//ready

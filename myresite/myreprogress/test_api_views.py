@@ -343,6 +343,16 @@ class APIViewsTestCase(TestCase):
 									)
 		self.assertEqual(response.status_code, 400)
 
+		# If a number is provided as a string, the deletion function may treat it as a sequence. like [1,7] in case of "17"
+		# This should not happen. Raise 400 (ArgumentError a.k.a. BadRequest)
+		response = self.client.post(reverse(PAGE_NAME,
+											kwargs={'book_id': '1'}),
+									content_type='application/json',
+									data='{"pages_to_delete": "12"}',
+									# should be same for 0, repetitive and negative integers
+									)
+		self.assertEqual(response.status_code, 400)
+
 		# testing for preservance after erratic calls
 		self.assertEqual(set(range(2, 30, 3)), set(i.page_number for i in book1.getPages()))
 

@@ -171,10 +171,12 @@ class Book(models.Model):
 		if isinstance(page_numbers_to_delete, int):
 			# one page provided as integer
 			page_numbers_to_delete = (page_numbers_to_delete,)
+		elif isinstance(page_numbers_to_delete, str):
+			raise ArgumentError("You have provided a string! You probably wanted to provide a single number. Please, remove the quotes.")
 
 		try:
 			pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
-		except (ValueError ,TypeError) as e:
+		except (ValueError, TypeError) as e:
 			raise ArgumentError("The page number argument is neither an integer nor an iterable!")
 
 		deletion_result = pages_to_delete.delete()
