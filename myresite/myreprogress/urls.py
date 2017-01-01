@@ -11,8 +11,8 @@ urlpatterns = [
     url(r'^index\.html$', views.index, name='index'),
     url(r'^book/$', views.BookChoiceView.as_view(), name='Book selection'),
 
-    url(r'^book/(?P<book_id>[0-9]+)/$', views.book_stats, name='Book stats'),
-    url(r'^book/(?P<book_slug>[a-zA-Z0-9\-]+)/$', views.book_stats, name='Book stats'),  # access via slug
+    url(r'^book/(?P<book_id>[0-9]+)/$', views.BookStatsView.as_view(), name='Book stats'),
+    url(r'^book/(?P<book_slug>[a-zA-Z0-9\-]+)/$', views.BookStatsView.as_view(), name='Book stats'),  # access via slug
 
     url(r'^login/$', auth_views.login, name='login'),
     url(r'^logout/$', auth_views.logout, {'next_page': "/"}, name='logout'),

@@ -22,8 +22,9 @@
 			var SYMBOL_FALSE = "{{symbol_false}}";
 
 
-
+/////////////////
 ///////////CSRF token for DJANGO
+////////////////
 // using jQuery
 function getCookie(name) {
     var cookieValue = null;
@@ -53,8 +54,9 @@ $.ajaxSetup({
         }
     }
 });
+/////////////////
 /////////END  handling CSRF token
-
+////////////////////
 
 			$(document).ready(function(){
 				console.log("Script started");
@@ -136,6 +138,7 @@ $.ajaxSetup({
 						success: function(data, status){
 							console.log("Insertion success!");//debug
 							console.log(data);//debug
+							location.reload();
 						},
 						error: function(xhr, status, error){
 							console.log("Insertion error!");//debug
@@ -144,8 +147,8 @@ $.ajaxSetup({
 						}
 					});
 
-					// return false; // prevents refresh
-					return true;
+					return false; // prevents refresh
+					// return true;
 				;})//$("#insert-page-form").submit
 
 				$("#validate-pages-button").click(function(){
@@ -173,6 +176,7 @@ $.ajaxSetup({
 					var id = $(this).attr('id');
 					var parse = id.split("-");
 					var page_number = parse[0];
+					console.log(page_number)//debug
 
 					$.ajax({
 						url: "{% url 'myreprogress:API. Delete pages' book_id=book_id %}",
@@ -211,6 +215,7 @@ Book "{{ book_name }}" stats<br>
 {% if user.is_staff %}
 	<button type="button" id="insert-page-form-toggle-button">Insert pages</button>
 	<button type="button" id="validate-pages-button">Validate pages</button>
+	{% block insert_form %}{% endblock %}
 	<form method="post" id="insert-page-form">
 		{% csrf_token %}
 		{{ insert_page_form.as_p }}
