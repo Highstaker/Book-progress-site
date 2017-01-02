@@ -8,6 +8,8 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
+
+Run with DJANGO_SETTINGS_MODULE=myresite.test_settings
 """
 
 import os
