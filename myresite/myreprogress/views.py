@@ -3,7 +3,6 @@ from django.template import RequestContext
 from django.http import HttpResponse
 from django.views import View
 from django.views.generic import ListView
-# from django.views.generic.edit import FormMixin
 from .forms import PageInsertForm
 
 from .models import Book, BookPage

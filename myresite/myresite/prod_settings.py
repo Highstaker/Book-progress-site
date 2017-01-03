@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 
-Run with DJANGO_SETTINGS_MODULE=myresite.test_settings
+Run with DJANGO_SETTINGS_MODULE=myresite.prod_settings
 """
 
 import os
@@ -121,10 +121,12 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
+STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'root_static/')
+print("STATIC_ROOT", STATIC_ROOT)#debug
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
- os.path.join(BASE_DIR, 'static/'),
+os.path.join(BASE_DIR, 'static/'),
 )
 
 LOGIN_REDIRECT_URL = "/book/"

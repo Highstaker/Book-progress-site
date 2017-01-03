@@ -8,9 +8,28 @@ https://docs.djangoproject.com/en/1.10/howto/deployment/wsgi/
 """
 
 import os
+from os import path
+import sys
+SCRIPT_DIR = path.dirname(path.realpath(__file__))
+sys.path = [path.join(path.dirname(path.dirname(SCRIPT_DIR)), i) for i in ["",
+				"env/lib/python3.4",
+				 "env/lib/python3.4/plat-x86_64-linux-gnu",
+				 "env/lib/python3.4/lib-dynload",
+				 "env/lib/python3.4/site-packages",
+]] + sys.path # for some reason it won't import my env libraries, only global ones. Had to prepend em manually.
+
+# sys.path = ['/home/highstaker/Документы/Programming/Websites/Myre_progress/', '/home/highstaker/Документы/Programming/Websites/Myre_progress/myresite', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/plat-x86_64-linux-gnu', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/lib-dynload', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/site-packages', '/home/highstaker/Документы/Programming/Websites/Myre_progress/myresite', '/home/highstaker/Документы/Programming/Websites/Myre_progress', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/plat-x86_64-linux-gnu', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/lib-dynload', '/usr/lib/python3.4', '/usr/lib/python3.4/plat-x86_64-linux-gnu', '/home/highstaker/Документы/Programming/Websites/Myre_progress/env/lib/python3.4/site-packages']
+
+print("Python version h0i:", sys.version)#debug
+print("Python interpreter h0i:", sys.executable)#debug
+print("Python path:", sys.path)#debug
+import django
+import django_extensions
+print("Django version:", django.VERSION)#debug #should be 1.10
+print("Django path:", django.__path__)#debug
+print("Django extensions version:", django_extensions.VERSION)#debug
 
 from django.core.wsgi import get_wsgi_application
-
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myresite.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "myresite.prod_settings")
 
 application = get_wsgi_application()
