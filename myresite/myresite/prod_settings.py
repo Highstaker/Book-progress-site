@@ -27,7 +27,9 @@ SECRET_KEY = '_&m+56*5$dhm3=kglnq)+g6=1n4*8@b8y3p90!z-d+_wty(c#-'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['127.0.0.1',]
+ALLOWED_HOSTS = ['127.0.0.1',
+                 '185.70.187.235', # my server's IP
+                 ]
 
 
 # Application definition
