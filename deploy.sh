@@ -69,3 +69,7 @@ nginx -s reload
 mkdir -p $STATIC_PATH
 ./prod_manage.sh collectstatic
 
+# creating database
+./prod_manage.sh makemigrations
+./prod_manage.sh migrate
+
