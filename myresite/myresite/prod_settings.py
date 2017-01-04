@@ -13,6 +13,7 @@ Run with DJANGO_SETTINGS_MODULE=myresite.prod_settings
 """
 
 import os
+from django.utils.crypto import get_random_string
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -22,13 +23,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '_&m+56*5$dhm3=kglnq)+g6=1n4*8@b8y3p90!z-d+_wty(c#-'
+try:
+    from myresite import secret_key
+    SECRET_KEY=secret_key.SECRET_KEY
+except ImportError:
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+    SECRET_KEY = get_random_string(50, chars)
+    with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'secret_key.py'), 'w') as f:
+        f.write('SECRET_KEY="{}"\n'.format(SECRET_KEY))
+    from myresite import secret_key
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
 ALLOWED_HOSTS = ['127.0.0.1',
-                 '185.70.187.235', # my server's IP
+                 '185.70.187.235',  # my server's IP
                  ]
 
 
@@ -122,6 +131,7 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
+#MAKE SURE that www-data has execution priviliges on all folders leading to static folder, or 403 will be raised.
 
 STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'root_static/')
 print("STATIC_ROOT", STATIC_ROOT)#debug
