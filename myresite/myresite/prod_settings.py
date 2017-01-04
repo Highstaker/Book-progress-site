@@ -36,8 +36,9 @@ except ImportError:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+import server_ip
 ALLOWED_HOSTS = ['127.0.0.1',
-                 '185.70.187.235',  # my server's IP
+                 server_ip.SERVER_IP,
                  ]
 
 
@@ -133,8 +134,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 #MAKE SURE that www-data has execution priviliges on all folders leading to static folder, or 403 will be raised.
 
-STATIC_ROOT = os.path.join(os.path.dirname(BASE_DIR), 'root_static/')
+from myresite import static_root
+STATIC_ROOT = static_root.STATIC_ROOT
 print("STATIC_ROOT", STATIC_ROOT)#debug
+
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
