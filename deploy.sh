@@ -67,6 +67,7 @@ sudo -u $MY_USERNAME echo "STATIC_ROOT='$STATIC_PATH'" > $SITE_FOLDER/$SITE_FOLD
 
 # Create certificates may require root or not
 if [ ! -f $CERT_PATH/$CERT_NAME.key ] || [ ! -f $CERT_PATH/$CERT_NAME.crt ]; then
+sudo -u $MY_USERNAME mkdir -p $CERT_PATH
 sudo -u $MY_USERNAME openssl req -x509 -nodes -newkey rsa:2048 -keyout $CERT_PATH/$CERT_NAME.key -out $CERT_PATH/$CERT_NAME.crt
 fi
 
