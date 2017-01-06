@@ -1,13 +1,18 @@
 server {
-    listen 28643;
-    server_name 127.0.0.1;
+ 	listen 28643;
+ 	server_name 127.0.0.1;
+ 	ssl on;
+ 	ssl_certificate /mnt/ramtemp/Myre_progress.crt;
+ 	ssl_certificate_key /mnt/ramtemp/Myre_progress.key;
+ 	error_page  497 https://$server_name:$server_port$request_uri;
 
-    location /static {
-        alias /home/highstaker/Документы/Programming/Websites/Myre_progress/root_static/;
-    }
+ 	location /static {
+ 		 alias /mnt/ramtemp/statics;
+ 	 }
 
-    location / {
-        include uwsgi_params;
-        uwsgi_pass unix:/tmp/myre_site_beta.sock;
-    }
-}
+ 	location / {
+ 		 include uwsgi_params;
+ 		 uwsgi_pass unix:/tmp/Myre_progress.sock;
+ 		 proxy_set_header X-Forwarded-Proto $scheme;
+ 	 }
+ }

@@ -37,7 +37,8 @@ except ImportError:
 DEBUG = False
 
 import server_ip
-ALLOWED_HOSTS = ['127.0.0.1',
+ALLOWED_HOSTS = [
+                # '127.0.0.1',
                  server_ip.SERVER_IP,
                  ]
 
@@ -145,3 +146,28 @@ os.path.join(BASE_DIR, 'static/'),
 )
 
 LOGIN_REDIRECT_URL = "/book/"
+
+
+#SECURITY SETTINGS
+
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = 'DENY'
+
+#SSL/HTTPS measures
+# A tuple representing a HTTP header/value combination that signifies a request is secure.
+# A header will be provided by nginx by setting `proxy_set_header X-Forwarded-Proto $scheme;`
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True  # so that requests over HTTP are redirected to HTTPS
+
+# This instructs the browser to only send cookies over HTTPS connections.
+# Note that this will mean that sessions will not work over HTTP,
+# and the CSRF protection will prevent any POST data being accepted over HTTP
+# (which will be fine if you are redirecting all HTTP traffic to HTTPS).
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+# CSRF_COOKIE_HTTPONLY = True #TODO: find a way to enable this
+
+#TODO: test these options, they are said to be unsafe.
+# SECURE_HSTS_SECONDS = 3600
+# SECURE_HSTS_INCLUDE_SUBDOMAINS = True
