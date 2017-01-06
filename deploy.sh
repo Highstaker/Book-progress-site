@@ -5,13 +5,13 @@
 #Some commands need to be run as root. This is the username to run non-root commands
 MY_USERNAME=$(logname)
 
-#Just a dummy command so it could generate a secret key. 
-#Sometimes it fails to  perform a command if the secret key isn't there, but generates it nevertheless
-sudo -u $MY_USERNAME ./prod_manage.sh check
-
 # installing dependencies
 sudo -u $MY_USERNAME virtualenv env
 sudo -u $MY_USERNAME env/bin/pip3 install -r requirements.txt
+
+#Just a dummy command so it could generate a secret key. 
+#Sometimes it fails to  perform a command if the secret key isn't there, but generates it nevertheless
+sudo -u $MY_USERNAME ./prod_manage.sh check
 
 echo "Enter your server IP:"
 while [[ -z $SERVER_IP ]]
