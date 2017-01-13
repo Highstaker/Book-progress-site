@@ -238,7 +238,7 @@ class APIViewsTestCase(TestCase):
 		# testing after logout. Should return 403
 		self.client.logout()
 		response = self.client.post(reverse(PAGE_NAME,
-											kwargs={'book_id': '1'}),#TODO: different params and data here
+											kwargs={'book_id': '1'}),
 										content_type='application/json',
 										data='{"insert_at": 1, "pages_amount": 10}',
 									)

@@ -78,7 +78,6 @@ def apiTogglePageProperty(request, book_id, page_number):
 	return JsonResponse(response)
 
 
-# @csrf_exempt # todo: set CSRF protection after testing
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden
 @ensure_csrf_cookie
@@ -111,7 +110,6 @@ def apiInsertPages(request, book_id):
 	return SUCCESS_RESPONSE
 
 
-# @csrf_exempt # todo: set CSRF protection after testing
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden
 @ensure_csrf_cookie
@@ -129,7 +127,6 @@ def apiValidatePages(request, book_id):
 	return SUCCESS_RESPONSE
 
 
-# @csrf_exempt # todo: set CSRF protection after testing
 @require_http_methods(["POST"])
 @user_is_staff_or_forbidden
 @ensure_csrf_cookie

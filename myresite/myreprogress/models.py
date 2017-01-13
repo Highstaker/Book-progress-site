@@ -16,6 +16,7 @@ class ArgumentError(Exception):
 	"""Raised if an argument is not suitable for the method."""
 	pass
 
+
 def get_book(func):
 	def wrapper(*args, **kwargs):
 		try:
@@ -120,8 +121,6 @@ class Book(models.Model):
 
 	def __repr__(self):
 		return "Book {}".format(self.pk)
-
-	# TODO: create getPages() method to get all pages of a book from book model
 
 	def getPages(self):
 		"""
