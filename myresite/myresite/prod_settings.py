@@ -147,14 +147,13 @@ os.path.join(BASE_DIR, 'static/'),
 
 LOGIN_REDIRECT_URL = "/book/"
 
-
-#SECURITY SETTINGS
+# SECURITY SETTINGS
 
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
 X_FRAME_OPTIONS = 'DENY'
 
-#SSL/HTTPS measures
+# SSL/HTTPS measures
 # A tuple representing a HTTP header/value combination that signifies a request is secure.
 # A header will be provided by nginx by setting `proxy_set_header X-Forwarded-Proto $scheme;`
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -166,7 +165,7 @@ SECURE_SSL_REDIRECT = True  # so that requests over HTTP are redirected to HTTPS
 # (which will be fine if you are redirecting all HTTP traffic to HTTPS).
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
-# CSRF_COOKIE_HTTPONLY = True #TODO: find a way to enable this
+CSRF_COOKIE_HTTPONLY = True
 
 #TODO: test these options, they are said to be unsafe.
 # SECURE_HSTS_SECONDS = 3600
