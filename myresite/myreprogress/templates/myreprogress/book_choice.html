@@ -3,10 +3,13 @@
 {% block title %}{{ book_name }}Choose a book{% endblock %}
 
 {% block body %}
-{{ important_data }}
-<ul>
-	{% for book in books %}
-	<li><a href="{{book.pk}}">{{book.book_name}}</a></li>
-	{% endfor %}
-</ul>
+{% for book in books %}
+{% if forloop.first %}<div class="row">{% endif %}
+	<div class="col-sm-4 cell">
+		<a href="{{book.pk}}" class="book-link">{{book.book_name}}</a>
+	</div>
+	{% if forloop.counter|divisibleby:3 %}</div><div class="row">{% endif %}
+{% if forloop.last %}</div>{% endif %}
+{% endfor %}
+
 {% endblock %}

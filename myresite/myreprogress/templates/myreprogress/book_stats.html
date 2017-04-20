@@ -13,7 +13,9 @@ var delete_pages_url = "{% url 'myreprogress:API. Delete pages' book_id=book_id 
 <script type="text/javascript" src="{% static 'book_stats.js' %}"></script>
 {% endif %} 
 {% endblock %} 
+
 {% block scripts %} {% endblock %} 
+
 {% block body %} 
 {% with color_true="green" symbol_true="V" color_false="red" symbol_false="X" %} Book "{{ book_name }}" stats
 <br> 

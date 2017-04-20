@@ -1,0 +1,106 @@
+html{
+	height: 100%;
+}
+
+body{
+	height: 100%;
+	background: radial-gradient(rgba(0,0,0,0.1) 70%, rgba(10,10,10,1.0)), url("img/site_bg.png");
+	background-size: cover;
+	background-attachment: fixed;
+}
+
+#main-container{
+	min-height: 80%;
+	color: rgb(255,255,255);
+}
+
+.navbar{
+	background-color: rgb(30,30,30);
+}
+
+/* all this chaining is needed to increase weight, or else the Bootstrap style will override mine. See http://stackoverflow.com/a/27704409/2052138*/
+.navbar-inverse .nav>li>.nav-link{
+	/* gradual appearing of bottom underlining on hover */
+	-webkit-transition: box-shadow 0.5s, color 1.5s; /* Safari */
+	transition: box-shadow 0.5s, color 1.5s;
+	font-family: "Exo 2", sans-serif, "google";
+	font-size: 20px;
+	color: rgb(157,157,157);
+	text-transform: uppercase;
+}
+
+.navbar-inverse .nav>li>.nav-link:focus, .navbar-inverse .nav>li>.nav-link:hover{
+	box-shadow:  0 -5px 0 0 rgb(255,153,0) inset; /* bottom underlining on hover */
+	color: rgb(255,153,0);
+}
+
+#user-greeting{
+	color: rgb(230,230,230);
+	padding-right: 5px;
+}
+
+.cell{
+	text-align: center;
+	margin-bottom: 40px;
+}
+
+@font-face {
+	font-family: Constantin;
+	src: url("fonts/Constantine.ttf") format('truetype');
+}
+
+.book-link{
+	padding: 10px 40px 0 40px;
+
+	/*background-color: red;*/
+	background: url("img/link_bg.jpg");
+	background-position: 0 0;
+	background-size: 30vw;
+
+	border-width: 5px;
+	border-color: rgb(89,60,16);
+	border-style: solid;
+	border-radius: 5px;
+
+	width: 30vw;
+	height: 10vw;
+
+	font-size: 2vw;
+	font-family: Constantin, serif;
+	color: rgb(230,230,230);
+	text-shadow: 0 0 3px #FFFFFF;
+
+	display: inline-block;/* makes the parent stretch to the size of padding/border*/
+
+	-webkit-transition: text-shadow 1.5s, color 1.5s, border-color 1s; /* Safari */
+	transition: text-shadow 1.5s, color 1.5s, border-color 1s;
+}
+
+.book-link:hover, .book-link:focus{
+	color: rgb(255,153,0);
+	text-shadow: 0 0 5px rgb(255,153,0);
+	border-color: rgb(245, 159, 29);
+}
+
+@media(max-width: 768px)
+{
+	body{
+		background-position: -200px 0;
+	}
+
+	.book-link{
+		background-position: 10%;
+
+		width: 300px;
+		height: 100px;
+		background-size: 300px;
+
+		font-size: 20px;
+	}
+}
+
+footer{
+	background-color: #1a1a1a;
+	color: rgb(110,110,110);
+	padding-bottom: 150px;
+}
