@@ -2,7 +2,8 @@ from django.core.validators import MinValueValidator
 from django.db import models
 from django_extensions.db.fields import AutoSlugField
 from django.db import transaction
-
+#TODO: add writing/script/dialogue (it is one field). It is probably not per-page, just a boolean on a book instead.
+#TODO: associate covers with books
 
 class PageMovementError(Exception):
 	pass

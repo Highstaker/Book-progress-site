@@ -42,6 +42,7 @@ var delete_pages_url = "{% url 'myreprogress:API. Delete pages' book_id=book_id 
         <th>proofread</th>
     </tr>
     {% for page in book_pages %}
+    <!-- TODO: CSRF tokens are not checked here. Could be a security vulnerability? -->
     <tr>
         {% with storyboarded=page.storyboarded sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread %} {% if user.is_staff %}
         <td>

@@ -41,12 +41,14 @@ class BookStatsView(ListView):
             book = get_object_or_404(Book, pk=book_id)
         book_name = book.book_name
         pages = book.getPages()
+        amount_of_pages = len(pages)
 
-        insert_page_form = PageInsertForm()
+        insert_page_form = PageInsertForm(initial={"insert_at": amount_of_pages+1})
 
         context['book_id'] = book_id
         context['book_name'] = book_name
         context['book_pages'] = pages
+        # context['book_pages_amount'] = len(pages)
         context['insert_page_form'] = insert_page_form
 
         return context
