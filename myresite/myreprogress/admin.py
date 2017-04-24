@@ -5,10 +5,18 @@ from .models import BookPage, Book
 
 class BookPageAdmin(admin.ModelAdmin):
 	# fields NOT to show in Edit Page.
-	list_display = ('__str__', 'page_name', 'sketched', 'colored', 'edited', 'proofread',)
+	list_display = ('__str__', 'page_number', 'page_name', 'storyboarded', 'sketched', 'colored', 'edited', 'proofread',)
 	list_filter = ('book',)
 	readonly_fields = ('page_number',)  # valid page number is assigned via overridden save() in model
-	actions = ['delete_selected',]
+	actions = ('delete_selected',)
+
+	fieldsets = (
+		(None, {
+			'fields': ('book', 'page_name', 
+				'storyboarded', 'sketched', 'colored', 'edited', 'proofread',
+				)
+			}),
+		)
 
 	def save_model(self, request, obj, form, change):
 		if not change:

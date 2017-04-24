@@ -11,7 +11,6 @@ body{
 
 #main-container{
 	min-height: 80%;
-	color: rgb(255,255,255);
 }
 
 .navbar{
@@ -97,6 +96,11 @@ body{
 
 		font-size: 20px;
 	}
+}
+
+.page-delete-button{
+	background-color: #330000;
+	color: #ff0000;
 }
 
 footer{

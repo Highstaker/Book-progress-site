@@ -20,8 +20,8 @@ var delete_pages_url = "{% url 'myreprogress:API. Delete pages' book_id=book_id 
 {% with color_true="green" symbol_true="V" color_false="red" symbol_false="X" %} Book "{{ book_name }}" stats
 <br> 
 {% if user.is_staff %}
-<button type="button" id="insert-page-form-toggle-button">Insert pages</button>
-<button type="button" id="validate-pages-button">Validate pages</button>
+<button class="btn btn-info" type="button" id="insert-page-form-toggle-button">Insert pages</button>
+<button class="btn btn-warning" type="button" id="validate-pages-button">Validate pages</button>
 {% block insert_form %}{% endblock %}
 <form method="post" id="insert-page-form">
     {% csrf_token %} {{ insert_page_form.as_p }}
@@ -35,19 +35,22 @@ var delete_pages_url = "{% url 'myreprogress:API. Delete pages' book_id=book_id 
         <!-- delete buttons under this one-->
         {% endif %}
         <th>Page number</th>
-        <th>sketched </th>
+        <th>storyboarded</th>
+        <th>sketched</th>
         <th>colored</th>
         <th>edited</th>
         <th>proofread</th>
     </tr>
     {% for page in book_pages %}
     <tr>
-        {% with sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread %} {% if user.is_staff %}
+        {% with storyboarded=page.storyboarded sketched=page.sketched colored=page.colored edited=page.edited proofread=page.proofread %} {% if user.is_staff %}
         <td>
-            <button type="button" id="{{page.page_number}}-delete-button" class="page-delete-button">X</button>
+            <button type="button" id="{{page.page_number}}-delete-button" class="page-delete-button btn">X</button>
         </td>
         {% endif %}
         <td>Page {{ page.page_number }}</td>
+        <td id="{{page.page_number}}-storyboarded" class={% if user.is_staff %} "editable_checkbox"{% else %} "display_checkbox"{% endif %} style="background-color: {% if storyboarded %}{{color_true}}{% else %}{{color_false}}{% endif %}">
+            {% if storyboarded %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %}</td>
         <td id="{{page.page_number}}-sketched" class={% if user.is_staff %} "editable_checkbox"{% else %} "display_checkbox"{% endif %} style="background-color: {% if sketched %}{{color_true}}{% else %}{{color_false}}{% endif %}">
             {% if sketched %}{{symbol_true}}{% else %}{{symbol_false}}{% endif %}</td>
         <td id="{{page.page_number}}-colored" class={% if user.is_staff %} "editable_checkbox"{% else %} "display_checkbox"{% endif %} style="background-color: {% if colored %}{{color_true}}{% else %}{{color_false}}{% endif %}">
