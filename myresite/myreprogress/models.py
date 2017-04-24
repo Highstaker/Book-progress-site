@@ -18,6 +18,11 @@ class ArgumentError(Exception):
 
 
 def get_book(func):
+	"""
+	A wrapper that handles a book id. 
+	If it is a Book object (not an int, rather), passes it as-is.
+	If it is an integer, grabs the Book object with that ID.
+	"""
 	def wrapper(*args, **kwargs):
 		try:
 			book = kwargs['book']
@@ -28,9 +33,10 @@ def get_book(func):
 			book = args[0]
 			if isinstance(book, int):
 				args = (Book.objects.get(pk=book),) + args[1:]
-		result = func(*args,**kwargs)
+		result = func(*args, **kwargs)
 		return result
 	return wrapper
+
 
 class PageQuerySet(models.query.QuerySet):
 	def movePagesBy(self, starting, steps):
@@ -48,12 +54,12 @@ class PageQuerySet(models.query.QuerySet):
 			real_starting = sliced.aggregate(real_starting=models.Min('page_number'))["real_starting"]
 			if real_starting + steps <= 0:
 				raise PageMovementError("Some page numbers will result at 0 or negative. This is not permitted!")
-			elif len(self.filter(page_number__lt=real_starting, page_number__gte=real_starting+steps)):
+			elif len(self.filter(page_number__lt=real_starting, page_number__gte=real_starting + steps)):
 				# there are pages in the way!
 				raise PageMovementError("Cannot move! There are existing pages in the way.")
 
 		# moves all pages by `steps`.
-		sliced.update(page_number=models.F('page_number')+steps)
+		sliced.update(page_number=models.F('page_number') + steps)
 
 	def validatePageNumbers(self):
 		"""
@@ -63,9 +69,9 @@ class PageQuerySet(models.query.QuerySet):
 		with transaction.atomic():
 			prev_page = 0
 			for page in self:
-				if page.page_number > prev_page+1:
+				if page.page_number > prev_page + 1:
 					# print("validatePageNumbers", "prev_page", prev_page, "cur_page", page.page_number)#debug
-					page.page_number = prev_page+1
+					page.page_number = prev_page + 1
 					page.save()
 				prev_page = page.page_number
 
@@ -88,19 +94,36 @@ class BookPageManager(models.Manager):
 		return self.filter(book=book).order_by('page_number')
 
 
-class BookPage(models.Model):
-	page_number = models.IntegerField(default=1, validators=[MinValueValidator(1)],
-									verbose_name="Page Number (is assigned automatically)")
-	page_name = models.CharField(max_length=200, blank=True)
-	# link to book object this page belongs to.
+class GenericPage(models.Model):
+	"""Abstract page, other pages inherit from it."""
 	book = models.ForeignKey('Book', on_delete=models.CASCADE)
 
+	class Meta:
+		abstract = True
+
+
+class GenericColorPage(GenericPage):
+	"""Abstract page that is sketchable and colorable, other pages inherit from it."""
 	sketched = models.BooleanField(default=False)
 	colored = models.BooleanField(default=False)
 	edited = models.BooleanField(default=False)
-	proofread = models.BooleanField(default=False)
 
-	# extra_fields = models.TextField(default=)
+	class Meta:
+		abstract = True
+
+
+class GenericBookPage(GenericColorPage):
+	"""A normal book page, with a number. Needs to be storyboarded and edited."""
+
+	page_number = models.IntegerField(default=1, validators=[MinValueValidator(1)],
+								verbose_name="Page Number (is assigned automatically)")
+
+	# An optional name for a page
+	page_name = models.CharField(max_length=200, blank=True)
+
+	# link to book object this page belongs to.
+
+	storyboarded = models.BooleanField(default=False)
 
 	def __str__(self):
 		return 'Page {0} of "{1}"'.format(self.page_number, self.book.book_name)
@@ -108,8 +131,37 @@ class BookPage(models.Model):
 	class Meta:
 		# unique_together = (('page_number', 'book'),) # impedes movement of pages
 		ordering = ('-book', '-page_number',)
+		abstract = True
 
 	objects = BookPageManager()  # the manager for book pages
+
+
+class BookPage(GenericBookPage):
+	"""Just a regular book page with text (that needs to be proofread)"""
+	proofread = models.BooleanField(default=False)
+
+
+class TextlessBookPage(GenericBookPage):
+	"""Just a regular book page without text"""
+	pass
+
+
+class GenericCover(GenericColorPage):
+	"""A cover base class"""
+	pass
+
+	class Meta:
+		abstract = True
+
+
+class Cover(GenericCover):
+	"""A regular cover with text"""
+	proofread = models.BooleanField(default=False)
+
+
+class TextlessCover(GenericCover):
+	"""A regular cover without text"""
+	pass
 
 
 class Book(models.Model):
@@ -171,11 +223,11 @@ class Book(models.Model):
 			# one page provided as integer
 			page_numbers_to_delete = (page_numbers_to_delete,)
 		elif isinstance(page_numbers_to_delete, str):
-			raise ArgumentError("You have provided a string! You probably wanted to provide a single number. Please, remove the quotes.")
-
+			raise ArgumentError("You have provided a string! "
+								"You probably wanted to provide a single number. Please, remove the quotes.")
 		try:
 			pages_to_delete = pages.filter(page_number__in=page_numbers_to_delete)
-		except (ValueError, TypeError) as e:
+		except (ValueError, TypeError):
 			raise ArgumentError("The page number argument is neither an integer nor an iterable!")
 
 		deletion_result = pages_to_delete.delete()
