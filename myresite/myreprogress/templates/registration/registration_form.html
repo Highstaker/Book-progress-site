@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Registration page{% endblock %}
+
+{% block body %}
+  <form method="post">
+      <!-- Cross site request forgery protection
+      This should not be done for POST forms that target external URLs,
+      since that would cause the CSRF token to be leaked, leading to a vulnerability. -->
+    {% csrf_token %}
+      {{ form.as_p }}
+    <button type="submit">Register!</button>
+  </form>
+{% endblock %}

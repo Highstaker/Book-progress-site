@@ -1,6 +1,7 @@
 decorator==4.0.10
 Django==1.10.3
 django-extensions==1.7.5
+django-registration==2.2
 ipython==5.1.0
 ipython-genutils==0.1.0
 pexpect==4.2.1
