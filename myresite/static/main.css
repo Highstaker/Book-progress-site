@@ -4,7 +4,7 @@ html{
 
 body{
 	height: 100%;
-	/*background: radial-gradient(rgba(0,0,0,0.1) 70%, rgba(10,10,10,1.0)), url("img/site_bg.png");*/
+	background: radial-gradient(rgba(0,0,0,0.1) 70%, rgba(10,10,10,1.0)), url("img/site_bg.png");
 	background-size: cover;
 	background-attachment: fixed;
 }
